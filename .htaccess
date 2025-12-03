@@ -1,0 +1,16 @@
+# Habilitar rewrite
+RewriteEngine On
+
+# Redirigir /login a /login.html
+RewriteRule ^login$ /login.html [L]
+
+# Redirigir raíz a login si no hay sesión
+# (esto es opcional, si quieres que / redirija a /login)
+# RewriteCond %{REQUEST_URI} ^/$
+# RewriteRule ^$ /login.html [L]
+
+# Evitar acceso directo a archivos sensibles
+<FilesMatch "^(config\.js|\.env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

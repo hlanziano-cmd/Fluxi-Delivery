@@ -1,0 +1,41 @@
+{
+  "name": "fluxi-delivery-system",
+  "version": "1.0.0",
+  "description": "Sistema completo de gestión de entregas a domicilio para Colombia",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "lint": "echo 'Linting no configurado aún'",
+    "test": "echo 'Tests no configurados aún'",
+    "build": "echo 'Build process no configurado aún'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/fluxi"
+  },
+  "keywords": [
+    "delivery",
+    "domicilios",
+    "gps-tracking",
+    "supabase",
+    "colombia",
+    "logistics",
+    "real-time"
+  ],
+  "author": "Tu Nombre",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ]
+}
