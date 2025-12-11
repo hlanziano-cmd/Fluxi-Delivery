@@ -1,0 +1,3154 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fluxi - Domiciliario</title>
+
+        <!-- 🔒 META TAGS ANTI-CACHÉ -->
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+                    sans-serif;
+                background: linear-gradient(135deg, #1f2937 0%, #4f7bf7 100%);
+                min-height: 100vh;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 500px;
+                margin: 0 auto;
+                min-height: 100vh;
+                background: #f8fafb;
+                box-shadow: 0 0 20px rgba(31, 41, 55, 0.3);
+            }
+
+            .header {
+                background: #4f7bf7;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 0 2px 10px rgba(79, 123, 247, 0.4);
+            }
+
+            .header h1 {
+                font-size: 24px;
+                margin-bottom: 5px;
+            }
+
+            .header .subtitle {
+                font-size: 14px;
+                opacity: 0.9;
+            }
+
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .logo {
+                text-align: center;
+                margin-bottom: 30px;
+                font-size: 60px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                color: #1f2937;
+                font-weight: 600;
+                font-size: 14px;
+            }
+
+            .form-group input {
+                width: 100%;
+                padding: 15px;
+                border: 2px solid rgba(79, 123, 247, 0.2);
+                border-radius: 10px;
+                font-size: 16px;
+                transition: all 0.3s;
+                color: #1f2937;
+                background: #ffffff;
+            }
+
+            .form-group input:focus {
+                outline: none;
+                border-color: #4f7bf7;
+                box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.15);
+            }
+
+            .form-group input.error {
+                border-color: #e74c3c;
+            }
+
+            .form-hint {
+                font-size: 12px;
+                color: #7f8c8d;
+                margin-top: 5px;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 15px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                margin-bottom: 10px;
+            }
+
+            .btn-primary {
+                background: #4f7bf7;
+                color: white;
+                box-shadow: 0 4px 12px rgba(79, 123, 247, 0.4);
+            }
+
+            .btn-primary:active {
+                transform: scale(0.98);
+            }
+
+            .btn-primary:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .btn-success {
+                background: #27ae60;
+                color: white;
+            }
+
+            .btn-warning {
+                background: #f97316;
+                color: white;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+                animation: pulse-warning 2s infinite;
+            }
+
+            @keyframes pulse-warning {
+                0%,
+                100% {
+                    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+                }
+                50% {
+                    box-shadow: 0 4px 25px rgba(249, 115, 22, 0.7);
+                }
+            }
+
+            .btn-warning:active {
+                background: #ea580c;
+            }
+
+            .btn-danger {
+                background: #e74c3c;
+                color: white;
+            }
+
+            .btn-secondary {
+                background: #95a5a6;
+                color: white;
+            }
+
+            .hidden {
+                display: none !important;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .status-bar {
+                background: #ffffff;
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid rgba(79, 123, 247, 0.15);
+                box-shadow: 0 2px 6px rgba(79, 123, 247, 0.08);
+            }
+
+            .status-item {
+                text-align: center;
+            }
+
+            .status-item .label {
+                font-size: 12px;
+                color: #6b7280;
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+
+            .status-item .value {
+                font-size: 18px;
+                font-weight: bold;
+                color: #4f7bf7;
+            }
+
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 5px;
+            }
+
+            .status-indicator.active {
+                background: #27ae60;
+                box-shadow: 0 0 10px #27ae60;
+            }
+
+            .status-indicator.inactive {
+                background: #e74c3c;
+            }
+
+            .alert {
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+
+            .alert-info {
+                background: rgba(79, 123, 247, 0.1);
+                color: #1f2937;
+                border-left: 4px solid #4f7bf7;
+            }
+
+            .alert-success {
+                background: rgba(39, 174, 96, 0.1);
+                color: #155724;
+                border-left: 4px solid #27ae60;
+            }
+
+            .alert-warning {
+                background: rgba(249, 115, 22, 0.1);
+                color: #c2410c;
+                border-left: 4px solid #f97316;
+            }
+
+            .alert-danger {
+                background: rgba(231, 76, 60, 0.1);
+                color: #721c24;
+                border-left: 4px solid #e74c3c;
+            }
+
+            .order-card {
+                background: #ffffff;
+                border: 2px solid rgba(79, 123, 247, 0.15);
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 10px rgba(79, 123, 247, 0.08);
+            }
+
+            .order-card.active {
+                border-color: #f97316;
+                background: #ffffff;
+                box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+            }
+
+            .order-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #ecf0f1;
+            }
+
+            .order-id {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+
+            .order-status {
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .order-status.pendiente {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            .order-status.asignado {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+
+            .order-status.en_camino {
+                background: #cce5ff;
+                color: #004085;
+            }
+
+            .order-detail {
+                margin-bottom: 15px;
+            }
+
+            .order-detail-row {
+                display: flex;
+                padding: 10px 0;
+                border-bottom: 1px solid #f8f9fa;
+            }
+
+            .order-detail-row:last-child {
+                border-bottom: none;
+            }
+
+            .order-detail-label {
+                font-size: 13px;
+                color: #7f8c8d;
+                width: 100px;
+                flex-shrink: 0;
+            }
+
+            .order-detail-value {
+                font-size: 14px;
+                color: #2c3e50;
+                font-weight: 600;
+                flex: 1;
+            }
+
+            .timer-display {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 15px;
+                text-align: center;
+                margin-bottom: 20px;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            }
+
+            .timer-label {
+                font-size: 14px;
+                opacity: 0.9;
+                margin-bottom: 10px;
+            }
+
+            .timer-value {
+                font-size: 48px;
+                font-weight: bold;
+                font-family: 'Courier New', monospace;
+                letter-spacing: 2px;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: #7f8c8d;
+            }
+
+            .empty-state-icon {
+                font-size: 80px;
+                margin-bottom: 20px;
+                opacity: 0.5;
+            }
+
+            .empty-state-text {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+
+            .empty-state-subtext {
+                font-size: 14px;
+            }
+
+            .action-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .action-buttons.single {
+                grid-template-columns: 1fr;
+            }
+
+            .logout-btn {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-size: 14px;
+                cursor: pointer;
+                backdrop-filter: blur(10px);
+                z-index: 100;
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+
+            .pulse {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .alert {
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .new-order-badge {
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+                z-index: 1000;
+                animation: pulse 1s infinite;
+            }
+
+            .footer {
+                text-align: center;
+                padding: 20px;
+                color: #7f8c8d;
+                font-size: 12px;
+            }
+
+            .login-help {
+                margin-top: 20px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                font-size: 13px;
+                color: #495057;
+            }
+
+            .login-help strong {
+                display: block;
+                margin-bottom: 8px;
+                color: #2c3e50;
+            }
+
+            .login-help ul {
+                margin: 0;
+                padding-left: 20px;
+            }
+
+            .login-help li {
+                margin: 5px 0;
+            }
+
+            .location-control {
+                background: white;
+                border: 2px solid #ecf0f1;
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .location-control.active {
+                border-color: #27ae60;
+                background: linear-gradient(
+                    135deg,
+                    rgba(39, 174, 96, 0.05) 0%,
+                    rgba(39, 174, 96, 0.1) 100%
+                );
+            }
+
+            .location-control.inactive {
+                border-color: #e74c3c;
+                background: linear-gradient(
+                    135deg,
+                    rgba(231, 76, 60, 0.05) 0%,
+                    rgba(231, 76, 60, 0.1) 100%
+                );
+            }
+
+            .location-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 15px;
+            }
+
+            .location-title {
+                font-size: 16px;
+                font-weight: bold;
+                color: #2c3e50;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .location-message {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-bottom: 15px;
+                line-height: 1.5;
+            }
+
+            .location-message.success {
+                color: #27ae60;
+            }
+
+            .location-message.error {
+                color: #e74c3c;
+            }
+
+            .btn-location {
+                width: 100%;
+                padding: 15px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .btn-location.activate {
+                background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+                color: white;
+            }
+
+            .btn-location.activate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            }
+
+            .btn-location.deactivate {
+                background: #95a5a6;
+                color: white;
+            }
+
+            .btn-location:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .location-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px;
+                background: rgba(39, 174, 96, 0.1);
+                border-radius: 8px;
+                font-size: 13px;
+                color: #27ae60;
+                margin-top: 10px;
+            }
+
+            .location-warning {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
+                background: rgba(231, 76, 60, 0.1);
+                border-radius: 8px;
+                font-size: 13px;
+                color: #e74c3c;
+                margin-bottom: 15px;
+                line-height: 1.5;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Login Screen -->
+            <div id="login-screen">
+                <div class="header">
+                    <h1>🚀 Fluxi</h1>
+                    <div class="subtitle">App para Domiciliarios</div>
+                </div>
+                <div class="login-container">
+                    <div class="logo">🏍️</div>
+                    <div id="login-alert"></div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label>Número de Teléfono</label>
+                            <input
+                                type="tel"
+                                id="login-phone"
+                                required
+                                placeholder="+573001234567"
+                                value="+57"
+                            />
+                            <div class="form-hint">
+                                Formato: +57 seguido de 10 dígitos (Ej: +573001234567)
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="login-btn">
+                            Iniciar Sesión
+                        </button>
+                    </form>
+
+                    <div class="login-help">
+                        <strong>💡 ¿No puedes ingresar?</strong>
+                        <ul>
+                            <li>
+                                Asegúrate de usar el número registrado exactamente como fue creado
+                            </li>
+                            <li>Debe incluir +57 seguido de 10 dígitos</li>
+                            <li>No uses espacios ni guiones</li>
+                            <li>Ejemplo correcto: +573001234567</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main App Screen -->
+            <div id="app-screen" class="hidden">
+                <div class="header">
+                    <button class="logout-btn" id="logout-btn">Salir</button>
+                    <h1>🏍️ <span id="delivery-name">Domiciliario</span></h1>
+                    <div class="subtitle">
+                        <span class="status-indicator" id="location-indicator"></span>
+                        <span id="location-status">Ubicación desactivada</span>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <!-- Location Control -->
+                    <div id="location-control" class="location-control inactive">
+                        <div class="location-header">
+                            <div class="location-title">
+                                <span id="location-icon">📍</span>
+                                <span>Control de Ubicación</span>
+                            </div>
+                            <span
+                                class="status-indicator inactive"
+                                id="location-indicator-main"
+                            ></span>
+                        </div>
+
+                        <div id="location-warning" class="location-warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong>Ubicación desactivada</strong><br />
+                                Debes activar tu ubicación para poder aceptar pedidos. El cliente
+                                necesita ver dónde estás en tiempo real.
+                            </div>
+                        </div>
+
+                        <div id="location-message" class="location-message">
+                            Toca el botón para compartir tu ubicación
+                        </div>
+
+                        <button
+                            id="btn-toggle-location"
+                            class="btn-location activate"
+                            onclick="window.toggleLocation()"
+                        >
+                            <span id="location-btn-icon">📍</span>
+                            <span id="location-btn-text">Activar Ubicación</span>
+                        </button>
+
+                        <div id="location-info" class="location-info hidden">
+                            <span>✅</span>
+                            <div>
+                                <strong>Ubicación compartida</strong><br />
+                                <span id="location-status-detail">Actualizado: --:--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-bar">
+                        <div class="status-item">
+                            <div class="label">Pedidos Hoy</div>
+                            <div class="value" id="orders-today">0</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="label">Completados</div>
+                            <div class="value" id="orders-completed">0</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="label">En Curso</div>
+                            <div class="value" id="orders-active">0</div>
+                        </div>
+                    </div>
+
+                    <div id="alert-container"></div>
+
+                    <!-- Active Order Section (Mis Pedidos) -->
+                    <div id="active-order-container" class="hidden">
+                        <h2 style="margin-bottom: 15px; color: #2c3e50">📦 Pedido Activo</h2>
+
+                        <div class="timer-display">
+                            <div class="timer-label">⏱️ Tiempo Transcurrido</div>
+                            <div class="timer-value" id="timer-display">00:00:00</div>
+                        </div>
+
+                        <div id="active-order-card"></div>
+                    </div>
+
+                    <!-- Available Orders Section - OCULTA: Los pedidos se asignan desde Index -->
+                    <div id="available-orders-container" style="display: none">
+                        <h2 style="margin-bottom: 15px; color: #2c3e50">📋 Pedidos Disponibles</h2>
+                        <div id="orders-list"></div>
+                    </div>
+
+                    <!-- Cash Balance Section -->
+                    <div id="cash-balance-section" style="margin: 20px 0">
+                        <h2 style="margin-bottom: 5px; color: #2c3e50">💰 Mi Cuadre de Caja</h2>
+                        <p
+                            id="balance-period-info"
+                            style="font-size: 12px; color: #7f8c8d; margin-bottom: 15px"
+                        >
+                            Desde las 8:00 AM de hoy
+                        </p>
+
+                        <div
+                            style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 10px;
+                                margin-bottom: 15px;
+                            "
+                        >
+                            <!-- Valor Arranque -->
+                            <div
+                                style="
+                                    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 10px;
+                                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                                "
+                            >
+                                <div style="font-size: 11px; opacity: 0.9; margin-bottom: 5px">
+                                    💵 Valor Arranque
+                                </div>
+                                <div
+                                    id="balance-arranque"
+                                    style="font-size: 20px; font-weight: bold"
+                                >
+                                    $0
+                                </div>
+                            </div>
+
+                            <!-- Efectivo Recaudado -->
+                            <div
+                                style="
+                                    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+                                    color: white;
+                                    padding: 15px;
+                                    border-radius: 10px;
+                                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                                "
+                            >
+                                <div style="font-size: 11px; opacity: 0.9; margin-bottom: 5px">
+                                    💵 Efectivo Recaudado
+                                </div>
+                                <div
+                                    id="balance-efectivo"
+                                    style="font-size: 20px; font-weight: bold"
+                                >
+                                    $0
+                                </div>
+                                <div
+                                    id="balance-efectivo-desglose"
+                                    style="font-size: 9px; opacity: 0.7; margin-top: 3px"
+                                >
+                                    Pedidos: $0 | Domicilios: $0
+                                </div>
+                                <div
+                                    id="balance-efectivo-cantidad"
+                                    style="font-size: 10px; opacity: 0.8; margin-top: 5px"
+                                >
+                                    0 pedidos
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Efectivo -->
+                        <div
+                            style="
+                                background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+                                color: white;
+                                padding: 15px;
+                                border-radius: 10px;
+                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                                margin-bottom: 15px;
+                            "
+                        >
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px">
+                                💰 Total Efectivo (Arranque + Recaudado)
+                            </div>
+                            <div
+                                id="balance-total-efectivo"
+                                style="font-size: 24px; font-weight: bold"
+                            >
+                                $0
+                            </div>
+                        </div>
+
+                        <!-- Pagos con Datáfono -->
+                        <div
+                            style="
+                                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                                color: white;
+                                padding: 15px;
+                                border-radius: 10px;
+                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                                margin-bottom: 15px;
+                            "
+                        >
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px">
+                                💳 Pagos con Datáfono
+                            </div>
+                            <div
+                                id="balance-datafono-info"
+                                style="font-size: 13px; opacity: 0.9; margin-bottom: 5px"
+                            >
+                                Datáfono: --
+                            </div>
+                            <div id="balance-tarjetas" style="font-size: 22px; font-weight: bold">
+                                $0
+                            </div>
+                            <div
+                                id="balance-datafono-desglose"
+                                style="font-size: 9px; opacity: 0.7; margin-top: 5px"
+                            >
+                                Pedidos: $0 | Domicilios: $0
+                            </div>
+                        </div>
+
+                        <!-- Total General -->
+                        <div
+                            style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                padding: 18px;
+                                border-radius: 10px;
+                                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+                            "
+                        >
+                            <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px">
+                                💎 Total General
+                            </div>
+                            <div
+                                id="balance-total-general"
+                                style="font-size: 28px; font-weight: bold"
+                            >
+                                $0
+                            </div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 5px">
+                                Efectivo + Datáfono
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer">Fluxi © 2025 - Sistema de Domicilios</div>
+            </div>
+        </div>
+
+        <script type="module">
+            import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+            const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
+            const SUPABASE_KEY =
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
+
+            const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // 🔖 SISTEMA DE VERSIONES Y CONTROL DE CACHÉ
+            const APP_VERSION = '2.2.0'; // ACTUALIZADO: 24-Oct-2024 - Fix tracking + Background support
+            const VERSION_KEY = 'fluxi_delivery_version';
+
+            // Verificar versión y detectar caché
+            (function checkVersion() {
+                console.log(
+                    '%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+                    'color: #667eea; font-weight: bold;'
+                );
+                console.log(
+                    '%c🔖 Fluxi Domiciliario - Versión ' + APP_VERSION,
+                    'color: #667eea; font-weight: bold; font-size: 14px;'
+                );
+                console.log(
+                    '%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+                    'color: #667eea; font-weight: bold;'
+                );
+
+                const savedVersion = localStorage.getItem(VERSION_KEY);
+
+                if (savedVersion !== APP_VERSION) {
+                    if (savedVersion) {
+                        console.log(
+                            '%c🆕 NUEVA VERSIÓN DETECTADA',
+                            'color: #27ae60; font-weight: bold; font-size: 13px;'
+                        );
+                        console.log('%c   Versión anterior:', 'color: #95a5a6;', savedVersion);
+                        console.log('%c   Versión actual:', 'color: #27ae60;', APP_VERSION);
+                        console.log('%c   ✅ Novedades:', 'color: #3498db;');
+                        console.log(
+                            '%c      • Ubicación se actualiza al completar entregas',
+                            'color: #3498db;'
+                        );
+                        console.log(
+                            '%c      • Ubicación NO se activa automáticamente (solo con botón)',
+                            'color: #3498db;'
+                        );
+                        console.log(
+                            '%c      • Tracking funciona en segundo plano',
+                            'color: #3498db;'
+                        );
+                        console.log(
+                            '%c      • Soporte para Wake Lock (mantiene app activa)',
+                            'color: #3498db;'
+                        );
+
+                        // Mostrar notificación al usuario
+                        setTimeout(() => {
+                            showAlert(
+                                '🆕 Nueva versión ' +
+                                    APP_VERSION +
+                                    ' instalada. Ahora soporta tracking en segundo plano y control manual de ubicación.',
+                                'success'
+                            );
+                        }, 2000);
+                    }
+
+                    // Guardar nueva versión
+                    localStorage.setItem(VERSION_KEY, APP_VERSION);
+                } else {
+                    console.log('%c✅ Versión actual:', 'color: #27ae60;', APP_VERSION);
+                }
+
+                console.log(
+                    '%c💡 TIP: Si ves problemas, cierra y abre la app de nuevo',
+                    'color: #f39c12; font-style: italic;'
+                );
+                console.log(
+                    '%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n',
+                    'color: #667eea; font-weight: bold;'
+                );
+            })();
+
+            // Exponer versión globalmente
+            window.FLUXI_VERSION = APP_VERSION;
+
+            let currentDelivery = null;
+            let activeOrder = null;
+            let locationWatchId = null;
+            let locationUpdateInterval = null;
+            let timerInterval = null;
+            let timerStartTime = null;
+            let realtimeChannel = null;
+            let isLocationActive = false; // Nueva variable para trackear estado de ubicación
+            let locationUpdateCount = 0; // NUEVO: Contador de actualizaciones de ubicación
+
+            // 🔋 VARIABLES PARA TRACKING EN SEGUNDO PLANO
+            let wakeLock = null; // Para mantener la pantalla activa (opcional)
+            let isAppInBackground = false; // Para detectar si la app está en background
+            let backgroundUpdateCount = 0; // Contador de actualizaciones en background
+
+            // 📱 SISTEMA DE TRACKING EN SEGUNDO PLANO
+            // Configurar listeners para detectar cuando la app va a background/foreground
+            (function setupBackgroundTracking() {
+                console.log('🔧 Configurando sistema de tracking en segundo plano...');
+
+                // Page Visibility API - detecta cuando la app está oculta/visible
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        console.log('📴 App movida a segundo plano');
+                        isAppInBackground = true;
+
+                        if (isLocationActive) {
+                            console.log(
+                                '📍 Ubicación activa - continuará actualizándose en segundo plano'
+                            );
+                            showAlert(
+                                '📍 La app seguirá actualizando tu ubicación en segundo plano',
+                                'info'
+                            );
+                        }
+                    } else {
+                        console.log('📲 App restaurada al primer plano');
+                        isAppInBackground = false;
+
+                        if (isLocationActive) {
+                            console.log(
+                                '✅ Ubicación activa - actualizaciones en segundo plano: ' +
+                                    backgroundUpdateCount
+                            );
+                        }
+                    }
+                });
+
+                // Lifecycle API - para apps en móviles modernos
+                if ('onfreeze' in document) {
+                    document.addEventListener('freeze', () => {
+                        console.log('❄️ App congelada por el sistema');
+                        if (isLocationActive) {
+                            console.log(
+                                '⚠️ La ubicación puede dejar de actualizarse mientras esté congelada'
+                            );
+                        }
+                    });
+
+                    document.addEventListener('resume', () => {
+                        console.log('▶️ App resumida');
+                        if (isLocationActive) {
+                            console.log(
+                                '🔄 Forzando actualización de ubicación después de resumir...'
+                            );
+                            updateLocation().catch((err) =>
+                                console.error('Error al actualizar ubicación:', err)
+                            );
+                        }
+                    });
+                }
+
+                // Detectar cuando el usuario vuelve a la pestaña (focus)
+                window.addEventListener('focus', () => {
+                    if (isLocationActive && !document.hidden) {
+                        console.log('👁️ Usuario volvió a la app');
+                    }
+                });
+
+                console.log('✅ Sistema de tracking en segundo plano configurado');
+            })();
+
+            // 🔋 FUNCIÓN PARA SOLICITAR WAKE LOCK (MANTENER PANTALLA ACTIVA)
+            // Nota: Wake Lock ayuda pero NO es obligatorio. El tracking debe funcionar sin él.
+            async function requestWakeLock() {
+                // Solo intentar si la API está disponible
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        console.log('🔋 Wake Lock activado - la pantalla permanecerá activa');
+
+                        wakeLock.addEventListener('release', () => {
+                            console.log('🔋 Wake Lock liberado');
+                            wakeLock = null;
+                        });
+
+                        return true;
+                    } catch (err) {
+                        console.warn('⚠️ No se pudo activar Wake Lock:', err.message);
+                        console.log('ℹ️ El tracking seguirá funcionando sin Wake Lock');
+                        return false;
+                    }
+                } else {
+                    console.log('ℹ️ Wake Lock API no disponible en este navegador');
+                    return false;
+                }
+            }
+
+            // 🔓 FUNCIÓN PARA LIBERAR WAKE LOCK
+            function releaseWakeLock() {
+                if (wakeLock) {
+                    wakeLock
+                        .release()
+                        .then(() => {
+                            console.log('🔋 Wake Lock liberado exitosamente');
+                            wakeLock = null;
+                        })
+                        .catch((err) => {
+                            console.warn('⚠️ Error al liberar Wake Lock:', err);
+                        });
+                }
+            }
+
+            // Función de debug para verificar estado del sistema de ubicación
+            window.checkLocationStatus = function () {
+                console.log('📊 ========== ESTADO DEL SISTEMA DE UBICACIÓN ==========');
+                console.log(
+                    '📱 Navegador:',
+                    navigator.userAgent.includes('Mobile') ? 'Móvil' : 'Desktop'
+                );
+                console.log(
+                    '🗺️ Geolocalización disponible:',
+                    'geolocation' in navigator ? '✅ SÍ' : '❌ NO'
+                );
+                console.log(
+                    '👤 Domiciliario actual:',
+                    currentDelivery ? currentDelivery.nombre : '❌ No hay sesión'
+                );
+                console.log(
+                    '📦 Pedido activo:',
+                    activeOrder ? `#${activeOrder.id.substring(0, 8)}` : '❌ Sin pedido'
+                );
+                console.log(
+                    '📍 Sistema de ubicación:',
+                    isLocationActive ? '✅ ACTIVO' : '❌ INACTIVO'
+                );
+                console.log(
+                    '⏱️ Intervalo de actualización:',
+                    locationUpdateInterval
+                        ? `✅ Corriendo (ID: ${locationUpdateInterval})`
+                        : '❌ No está corriendo'
+                );
+                console.log(
+                    '👀 WatchPosition:',
+                    locationWatchId ? `✅ Activo (ID: ${locationWatchId})` : '❌ No está activo'
+                );
+                console.log('🔋 Wake Lock:', wakeLock ? '✅ Activo' : '❌ Inactivo');
+                console.log('📴 App en segundo plano:', isAppInBackground ? '✅ SÍ' : '❌ NO');
+                console.log('📊 Total de actualizaciones:', locationUpdateCount);
+                console.log('📊 Actualizaciones en background:', backgroundUpdateCount);
+                console.log('🕐 Hora actual:', new Date().toLocaleTimeString('es-CO'));
+                console.log('====================================================');
+
+                if (!isLocationActive) {
+                    console.warn('⚠️ ADVERTENCIA: El sistema de ubicación NO está activo.');
+                    console.log('💡 Solución: Presiona el botón "Activar Ubicación" en la app.');
+                } else if (!locationUpdateInterval && !locationWatchId) {
+                    console.error(
+                        '❌ ERROR: El sistema dice estar activo pero no hay intervalo ni watchPosition corriendo.'
+                    );
+                    console.log('💡 Solución: Desactiva y vuelve a activar la ubicación.');
+                } else {
+                    console.log('✅ El sistema de ubicación está funcionando correctamente.');
+                    if (isAppInBackground) {
+                        console.log(
+                            '📴 La app está en segundo plano - las actualizaciones continuarán automáticamente'
+                        );
+                    }
+                }
+
+                return {
+                    activo: isLocationActive,
+                    intervalo: !!locationUpdateInterval,
+                    watchPosition: !!locationWatchId,
+                    wakeLock: !!wakeLock,
+                    enBackground: isAppInBackground,
+                    actualizaciones: locationUpdateCount,
+                    actualizacionesBackground: backgroundUpdateCount,
+                };
+            };
+
+            // Exponer variables globalmente para debug
+            window.debugLocationVars = {
+                get isActive() {
+                    return isLocationActive;
+                },
+                get intervalId() {
+                    return locationUpdateInterval;
+                },
+                get watchId() {
+                    return locationWatchId;
+                },
+                get updateCount() {
+                    return locationUpdateCount;
+                },
+                get currentDelivery() {
+                    return currentDelivery;
+                },
+            };
+
+            function showAlert(message, type = 'info') {
+                const container =
+                    document.getElementById('alert-container') ||
+                    document.getElementById('login-alert');
+                const alertClass = `alert-${type}`;
+                container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+                setTimeout(() => (container.innerHTML = ''), 5000);
+            }
+
+            function validatePhone(phone) {
+                // Eliminar espacios en blanco
+                phone = phone.trim();
+
+                // Verificar que empiece con +57
+                if (!phone.startsWith('+57')) {
+                    return { valid: false, error: 'El número debe comenzar con +57' };
+                }
+
+                // Verificar que tenga exactamente 13 caracteres (+57 + 10 dígitos)
+                if (phone.length !== 13) {
+                    return {
+                        valid: false,
+                        error: 'El número debe tener 10 dígitos después de +57',
+                    };
+                }
+
+                // Verificar que todos los caracteres después de +57 sean dígitos
+                const digits = phone.substring(3);
+                if (!/^\d{10}$/.test(digits)) {
+                    return {
+                        valid: false,
+                        error: 'El número debe contener solo dígitos después de +57',
+                    };
+                }
+
+                return { valid: true, phone: phone };
+            }
+
+            function playNotificationSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(
+                        0.01,
+                        audioContext.currentTime + 0.5
+                    );
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (e) {
+                    console.log('No se pudo reproducir sonido');
+                }
+            }
+
+            function showNewOrderNotification(order) {
+                showAlert(
+                    `🎉 ¡Nuevo pedido asignado! #${order.id.substring(0, 8)} - ${order.cliente}`,
+                    'success'
+                );
+
+                const badge = document.createElement('div');
+                badge.className = 'new-order-badge';
+                badge.textContent = '🆕 Nuevo Pedido';
+                document.body.appendChild(badge);
+
+                setTimeout(() => badge.remove(), 5000);
+
+                playNotificationSound();
+
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Fluxi - Nuevo Pedido', {
+                        body: `Pedido de ${order.cliente}\nTotal: ${formatCurrency(order.valor_pedido + order.valor_domicilio)}`,
+                        icon: '🏍️',
+                        badge: '📦',
+                    });
+                }
+            }
+
+            function setupRealtimeSubscription() {
+                if (realtimeChannel) {
+                    supabase.removeChannel(realtimeChannel);
+                }
+
+                realtimeChannel = supabase
+                    .channel('pedidos-changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'pedidos',
+                        },
+                        async (payload) => {
+                            console.log('Cambio detectado:', payload);
+
+                            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                                const newOrder = payload.new;
+
+                                if (
+                                    newOrder.domiciliario_id === currentDelivery.id &&
+                                    newOrder.estado === 'asignado' &&
+                                    (!activeOrder || activeOrder.id !== newOrder.id)
+                                ) {
+                                    showNewOrderNotification(newOrder);
+                                }
+                            }
+
+                            await loadOrders();
+                        }
+                    )
+                    .subscribe();
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                }).format(value);
+            }
+
+            function formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            function startTimer(startTime = null) {
+                if (timerInterval) return;
+
+                // Si se proporciona un tiempo de inicio, usarlo; sino, usar el tiempo actual
+                timerStartTime = startTime || Date.now();
+
+                // Actualizar inmediatamente
+                const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+                document.getElementById('timer-display').textContent = formatTime(elapsed);
+
+                timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+                    document.getElementById('timer-display').textContent = formatTime(elapsed);
+                }, 1000);
+
+                console.log(
+                    '⏱️ Temporizador iniciado desde:',
+                    new Date(timerStartTime).toLocaleTimeString()
+                );
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerStartTime = null;
+                document.getElementById('timer-display').textContent = '00:00:00';
+            }
+
+            function requestLocationPermission() {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject(new Error('Geolocalización no soportada'));
+                        return;
+                    }
+
+                    navigator.geolocation.getCurrentPosition(
+                        () => resolve(true),
+                        (error) => reject(error),
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                });
+            }
+
+            function updateLocation() {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject(new Error('Geolocalización no disponible'));
+                        return;
+                    }
+
+                    if (!currentDelivery) {
+                        reject(new Error('No hay domiciliario activo'));
+                        return;
+                    }
+
+                    console.log('🔄 Solicitando ubicación GPS...');
+
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            try {
+                                const locationData = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude,
+                                    timestamp: new Date().toISOString(),
+                                    accuracy: position.coords.accuracy,
+                                    speed: position.coords.speed,
+                                    heading: position.coords.heading,
+                                };
+
+                                console.log('📍 Ubicación GPS obtenida:', {
+                                    lat: locationData.lat.toFixed(6),
+                                    lng: locationData.lng.toFixed(6),
+                                    accuracy: Math.round(locationData.accuracy) + 'm',
+                                    timestamp: locationData.timestamp,
+                                });
+
+                                console.log('💾 Guardando en base de datos...');
+                                const { data: updateResult, error: updateError } = await supabase
+                                    .from('domiciliarios')
+                                    .update({
+                                        ubicacion: locationData,
+                                        updated_at: new Date().toISOString(),
+                                    })
+                                    .eq('id', currentDelivery.id)
+                                    .select();
+
+                                if (updateError) {
+                                    console.error('❌ Error al guardar ubicación:', updateError);
+                                    throw updateError;
+                                }
+
+                                console.log(
+                                    '✅ Ubicación guardada exitosamente en BD:',
+                                    updateResult
+                                );
+
+                                // Verificar que se guardó correctamente
+                                const { data: verifyData, error: verifyError } = await supabase
+                                    .from('domiciliarios')
+                                    .select('ubicacion')
+                                    .eq('id', currentDelivery.id)
+                                    .single();
+
+                                if (verifyData && verifyData.ubicacion) {
+                                    console.log('✅ Verificación: Ubicación confirmada en BD:', {
+                                        lat: verifyData.ubicacion.lat.toFixed(6),
+                                        lng: verifyData.ubicacion.lng.toFixed(6),
+                                        timestamp: verifyData.ubicacion.timestamp,
+                                    });
+                                } else {
+                                    console.warn(
+                                        '⚠️ Advertencia: No se pudo verificar la ubicación en BD'
+                                    );
+                                }
+
+                                // Incrementar contador de actualizaciones
+                                locationUpdateCount++;
+
+                                document
+                                    .getElementById('location-indicator')
+                                    .classList.add('active');
+                                document
+                                    .getElementById('location-indicator')
+                                    .classList.remove('inactive');
+
+                                const timeStr = new Date().toLocaleTimeString('es-CO', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                });
+
+                                document.getElementById('location-status').textContent =
+                                    `Ubicación activa - Actualizado: ${timeStr} (${locationUpdateCount} actualizaciones)`;
+
+                                // Actualizar UI del control de ubicación
+                                updateLocationUI(true);
+
+                                console.log(
+                                    `📍 [${locationUpdateCount}] Ubicación actualizada completamente:`,
+                                    {
+                                        lat: locationData.lat.toFixed(6),
+                                        lng: locationData.lng.toFixed(6),
+                                        accuracy: Math.round(locationData.accuracy) + 'm',
+                                        time: timeStr,
+                                    }
+                                );
+
+                                resolve(locationData);
+                            } catch (error) {
+                                console.error('❌ Error actualizando ubicación:', error);
+                                reject(error);
+                            }
+                        },
+                        (error) => {
+                            console.error('❌ Error de geolocalización:', error);
+                            let errorMessage = 'Error al obtener ubicación. ';
+                            switch (error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += 'Permisos de ubicación denegados.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += 'Ubicación no disponible.';
+                                    break;
+                                case error.TIMEOUT:
+                                    errorMessage += 'Tiempo de espera agotado.';
+                                    break;
+                                default:
+                                    errorMessage += error.message;
+                            }
+                            reject(new Error(errorMessage));
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                });
+            }
+
+            function updateLocationUI(active) {
+                const control = document.getElementById('location-control');
+                const warning = document.getElementById('location-warning');
+                const info = document.getElementById('location-info');
+                const message = document.getElementById('location-message');
+                const btn = document.getElementById('btn-toggle-location');
+                const btnText = document.getElementById('location-btn-text');
+                const btnIcon = document.getElementById('location-btn-icon');
+                const indicator = document.getElementById('location-indicator-main');
+                const statusDetail = document.getElementById('location-status-detail');
+
+                if (active) {
+                    control.classList.remove('inactive');
+                    control.classList.add('active');
+                    warning.classList.add('hidden');
+                    info.classList.remove('hidden');
+                    message.textContent = '🔄 Tu ubicación se actualiza cada 10 segundos';
+                    message.classList.add('success');
+                    btn.classList.remove('activate');
+                    btn.classList.add('deactivate');
+                    btnText.textContent = 'Desactivar Ubicación';
+                    btnIcon.textContent = '🛑';
+                    indicator.classList.remove('inactive');
+                    indicator.classList.add('active');
+
+                    const timeStr = new Date().toLocaleTimeString('es-CO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+
+                    statusDetail.textContent = `Actualizado: ${timeStr} | Total: ${locationUpdateCount} actualizaciones`;
+                } else {
+                    control.classList.remove('active');
+                    control.classList.add('inactive');
+                    warning.classList.remove('hidden');
+                    info.classList.add('hidden');
+                    message.textContent = 'Toca el botón para compartir tu ubicación';
+                    message.classList.remove('success');
+                    btn.classList.remove('deactivate');
+                    btn.classList.add('activate');
+                    btnText.textContent = 'Activar Ubicación';
+                    btnIcon.textContent = '📍';
+                    indicator.classList.remove('active');
+                    indicator.classList.add('inactive');
+                    statusDetail.textContent = '';
+                }
+            }
+
+            async function startLocationTracking() {
+                try {
+                    console.log('🔄 ========== INICIANDO SEGUIMIENTO DE UBICACIÓN ==========');
+                    console.log('   Hora de inicio:', new Date().toLocaleTimeString('es-CO'));
+
+                    // Paso 1: Solicitar permiso de ubicación
+                    await requestLocationPermission();
+                    console.log('✅ Permisos de ubicación obtenidos');
+
+                    // Paso 2: Obtener ubicación inicial y verificar que funcione
+                    await updateLocation();
+                    console.log('✅ Ubicación inicial obtenida exitosamente');
+
+                    // Paso 3: Intentar activar Wake Lock (opcional, para mejor tracking en background)
+                    console.log(
+                        '🔋 Intentando activar Wake Lock para mejorar tracking en segundo plano...'
+                    );
+                    const wakeLockActivated = await requestWakeLock();
+                    if (wakeLockActivated) {
+                        console.log('✅ Wake Lock activado - mejor tracking en segundo plano');
+                    } else {
+                        console.log(
+                            'ℹ️ Wake Lock no disponible - el tracking seguirá funcionando normalmente'
+                        );
+                    }
+
+                    // Paso 4: Configurar actualizaciones periódicas cada 15 segundos
+                    console.log('⏱️ Configurando actualizaciones automáticas cada 15 segundos...');
+                    locationUpdateInterval = setInterval(async () => {
+                        try {
+                            const bgStatus = isAppInBackground ? '[BACKGROUND]' : '[FOREGROUND]';
+                            console.log(
+                                `⏰ ${bgStatus} [INTERVALO] Ejecutando actualización automática...`
+                            );
+
+                            // Actualizar ubicación siempre que el tracking esté activo
+                            if (activeOrder) {
+                                console.log(
+                                    `📍 ${bgStatus} [INTERVALO] Pedido activo #${activeOrder.id.substring(0, 8)} - Estado: ${activeOrder.estado}`
+                                );
+                            } else {
+                                console.log(
+                                    `📍 ${bgStatus} [INTERVALO] Sin pedido activo - Actualizando ubicación en tiempo real`
+                                );
+                            }
+
+                            await updateLocation();
+
+                            if (isAppInBackground) {
+                                backgroundUpdateCount++;
+                                console.log(
+                                    `✅ ${bgStatus} [INTERVALO] Actualización completada (${backgroundUpdateCount} en background)`
+                                );
+                            } else {
+                                console.log(`✅ ${bgStatus} [INTERVALO] Actualización completada`);
+                            }
+                        } catch (error) {
+                            console.error(
+                                '❌ [INTERVALO] Error en actualización periódica:',
+                                error
+                            );
+                        }
+                    }, 15000); // 15 segundos
+
+                    console.log(
+                        '✅ Intervalo de actualización configurado (ID:',
+                        locationUpdateInterval,
+                        ')'
+                    );
+
+                    // Paso 5: Configurar watchPosition para actualizaciones EN MOVIMIENTO
+                    // Con opciones optimizadas para funcionar en segundo plano
+                    console.log('👀 Configurando watchPosition para actualizaciones continuas...');
+                    locationWatchId = navigator.geolocation.watchPosition(
+                        async (position) => {
+                            try {
+                                const bgStatus = isAppInBackground
+                                    ? '[BACKGROUND]'
+                                    : '[FOREGROUND]';
+                                console.log(
+                                    `🚶 ${bgStatus} [WATCHPOSITION] Cambio de posición detectado`
+                                );
+
+                                // Actualizar ubicación siempre que el tracking esté activo
+                                if (activeOrder) {
+                                    console.log(
+                                        `📍 ${bgStatus} [WATCHPOSITION] Pedido activo #${activeOrder.id.substring(0, 8)} - Actualizando...`
+                                    );
+                                } else {
+                                    console.log(
+                                        `📍 ${bgStatus} [WATCHPOSITION] Sin pedido activo - Actualizando ubicación en tiempo real`
+                                    );
+                                }
+
+                                const locationData = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude,
+                                    timestamp: new Date().toISOString(),
+                                    accuracy: position.coords.accuracy,
+                                    speed: position.coords.speed,
+                                    heading: position.coords.heading,
+                                };
+
+                                console.log(
+                                    `💾 ${bgStatus} [WATCHPOSITION] Guardando nueva ubicación:`,
+                                    {
+                                        lat: locationData.lat.toFixed(6),
+                                        lng: locationData.lng.toFixed(6),
+                                        accuracy: Math.round(locationData.accuracy) + 'm',
+                                    }
+                                );
+
+                                const { data, error } = await supabase
+                                    .from('domiciliarios')
+                                    .update({
+                                        ubicacion: locationData,
+                                        updated_at: new Date().toISOString(),
+                                    })
+                                    .eq('id', currentDelivery.id)
+                                    .select();
+
+                                if (error) {
+                                    console.error(
+                                        `❌ ${bgStatus} [WATCHPOSITION] Error al guardar:`,
+                                        error
+                                    );
+                                } else {
+                                    console.log(
+                                        `✅ ${bgStatus} [WATCHPOSITION] Ubicación guardada en BD`
+                                    );
+                                }
+
+                                // Incrementar contador
+                                locationUpdateCount++;
+                                if (isAppInBackground) {
+                                    backgroundUpdateCount++;
+                                }
+
+                                // Solo actualizar UI si está en foreground
+                                if (!isAppInBackground) {
+                                    document
+                                        .getElementById('location-indicator')
+                                        .classList.add('active');
+                                    document
+                                        .getElementById('location-indicator')
+                                        .classList.remove('inactive');
+
+                                    const timeStr = new Date().toLocaleTimeString('es-CO', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                    });
+
+                                    document.getElementById('location-status').textContent =
+                                        `Ubicación activa - Actualizado: ${timeStr} (${locationUpdateCount} actualizaciones)`;
+
+                                    // Actualizar UI del control de ubicación
+                                    updateLocationUI(true);
+                                }
+
+                                console.log(
+                                    `✅ ${bgStatus} [WATCHPOSITION] Actualización #${locationUpdateCount} completada`
+                                );
+                            } catch (error) {
+                                console.error('❌ [WATCHPOSITION] Error:', error);
+                            }
+                        },
+                        (error) => {
+                            console.error(
+                                '❌ [WATCHPOSITION] Error de watchPosition:',
+                                error.code,
+                                error.message
+                            );
+                            // No mostrar alert si está en background para no molestar al usuario
+                            if (!isAppInBackground) {
+                                showAlert(
+                                    '⚠️ Error continuo de ubicación. Verifica tus permisos.',
+                                    'warning'
+                                );
+                            }
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 30000, // 30 segundos - más tiempo para background
+                            maximumAge: 0,
+                        }
+                    );
+
+                    console.log('✅ watchPosition configurado (ID:', locationWatchId, ')');
+                    console.log('✅ ========== SEGUIMIENTO DE UBICACIÓN INICIADO ==========');
+                    console.log('📍 Sistema activo con:');
+                    console.log('   - Actualización automática cada 15 segundos');
+                    console.log('   - WatchPosition para detectar movimiento');
+                    console.log('   - Soporte para tracking en segundo plano');
+                    console.log('   - Wake Lock:', wakeLock ? 'Activo' : 'No disponible');
+                    console.log('   - Total actualizaciones hasta ahora:', locationUpdateCount);
+
+                    isLocationActive = true;
+                    backgroundUpdateCount = 0; // Resetear contador de background
+                    updateLocationUI(true);
+                    return true;
+                } catch (error) {
+                    console.error('❌ ========== ERROR AL INICIAR SEGUIMIENTO ==========');
+                    console.error('Error completo:', error);
+
+                    // Limpiar cualquier configuración parcial
+                    stopLocationTracking();
+
+                    // Mostrar mensaje específico según el error
+                    let errorMessage = '';
+                    if (
+                        error.code === 1 ||
+                        error.message.includes('denegados') ||
+                        error.message.includes('denied')
+                    ) {
+                        errorMessage =
+                            '❌ PERMISOS DENEGADOS\n\n' +
+                            '📱 Para activar permisos de ubicación:\n\n' +
+                            '1. Haz clic en el ícono 🔒 o ⓘ en la barra de direcciones\n' +
+                            '2. Busca "Ubicación" o "Location"\n' +
+                            '3. Selecciona "Permitir"\n' +
+                            '4. Recarga la página\n\n' +
+                            'IMPORTANTE: Sin ubicación activa no puedes aceptar pedidos.';
+                    } else if (
+                        error.code === 2 ||
+                        error.message.includes('no disponible') ||
+                        error.message.includes('unavailable')
+                    ) {
+                        errorMessage =
+                            '❌ GPS NO DISPONIBLE\n\n' +
+                            '📡 Verifica que:\n' +
+                            '1. El GPS esté activado en tu dispositivo\n' +
+                            '2. Estés al aire libre o cerca de una ventana\n' +
+                            '3. No estés en modo avión\n\n' +
+                            'Intenta nuevamente cuando el GPS esté disponible.';
+                    } else if (
+                        error.code === 3 ||
+                        error.message.includes('Tiempo de espera') ||
+                        error.message.includes('timeout')
+                    ) {
+                        errorMessage =
+                            '❌ TIEMPO DE ESPERA AGOTADO\n\n' +
+                            '⏱️ La ubicación tardó demasiado en obtenerse.\n\n' +
+                            'Esto puede ser por:\n' +
+                            '• Mala señal GPS\n' +
+                            '• Estás en un lugar cerrado\n' +
+                            '• Conexión lenta\n\n' +
+                            'Ve a un lugar con mejor señal e intenta de nuevo.';
+                    } else {
+                        errorMessage =
+                            '❌ ERROR AL ACTIVAR UBICACIÓN\n\n' +
+                            error.message +
+                            '\n\nIntenta recargar la página.';
+                    }
+
+                    alert(errorMessage);
+                    isLocationActive = false;
+                    updateLocationUI(false);
+                    return false;
+                }
+            }
+
+            function stopLocationTracking() {
+                console.log('🛑 ========== DETENIENDO SEGUIMIENTO DE UBICACIÓN ==========');
+
+                if (locationWatchId) {
+                    console.log('   🗑️ Limpiando watchPosition (ID:', locationWatchId, ')');
+                    navigator.geolocation.clearWatch(locationWatchId);
+                    locationWatchId = null;
+                    console.log('   ✅ watchPosition detenido');
+                } else {
+                    console.log('   ℹ️ No había watchPosition activo');
+                }
+
+                if (locationUpdateInterval) {
+                    console.log(
+                        '   🗑️ Limpiando intervalo de actualización (ID:',
+                        locationUpdateInterval,
+                        ')'
+                    );
+                    clearInterval(locationUpdateInterval);
+                    locationUpdateInterval = null;
+                    console.log('   ✅ Intervalo de actualización detenido');
+                } else {
+                    console.log('   ℹ️ No había intervalo activo');
+                }
+
+                // Liberar Wake Lock si está activo
+                if (wakeLock) {
+                    console.log('   🔋 Liberando Wake Lock...');
+                    releaseWakeLock();
+                    console.log('   ✅ Wake Lock liberado');
+                } else {
+                    console.log('   ℹ️ No había Wake Lock activo');
+                }
+
+                document.getElementById('location-indicator').classList.remove('active');
+                document.getElementById('location-indicator').classList.add('inactive');
+                document.getElementById('location-status').textContent = 'Ubicación desactivada';
+
+                // Mostrar estadísticas
+                console.log('   📊 Total de actualizaciones realizadas:', locationUpdateCount);
+                console.log('   📊 Actualizaciones en segundo plano:', backgroundUpdateCount);
+                console.log(
+                    '   📊 Actualizaciones en primer plano:',
+                    locationUpdateCount - backgroundUpdateCount
+                );
+
+                // Resetear contadores
+                locationUpdateCount = 0;
+                backgroundUpdateCount = 0;
+
+                // Actualizar estado y UI
+                isLocationActive = false;
+                updateLocationUI(false);
+
+                console.log('✅ ========== SEGUIMIENTO DE UBICACIÓN DETENIDO ==========');
+            }
+
+            window.toggleLocation = async function () {
+                const btn = document.getElementById('btn-toggle-location');
+
+                if (isLocationActive) {
+                    // Desactivar ubicación
+                    if (activeOrder) {
+                        showAlert(
+                            '⚠️ No puedes desactivar la ubicación mientras tienes un pedido activo.',
+                            'warning'
+                        );
+                        return;
+                    }
+
+                    if (
+                        confirm(
+                            '¿Estás seguro de desactivar tu ubicación? No podrás aceptar pedidos hasta que la vuelvas a activar.'
+                        )
+                    ) {
+                        stopLocationTracking();
+                        showAlert('✅ Ubicación desactivada', 'info');
+                    }
+                } else {
+                    // Activar ubicación
+                    btn.disabled = true;
+                    const btnText = document.getElementById('location-btn-text');
+                    const btnIcon = document.getElementById('location-btn-icon');
+                    btnText.textContent = 'Activando...';
+
+                    try {
+                        const success = await startLocationTracking();
+                        if (success) {
+                            showAlert(
+                                '✅ ¡Ubicación activada! Ahora puedes aceptar pedidos.',
+                                'success'
+                            );
+                        }
+                    } catch (error) {
+                        showAlert('❌ Error al activar ubicación: ' + error.message, 'danger');
+                    } finally {
+                        btn.disabled = false;
+                        if (isLocationActive) {
+                            btnText.textContent = 'Desactivar Ubicación';
+                            btnIcon.textContent = '🛑';
+                        } else {
+                            btnText.textContent = 'Activar Ubicación';
+                            btnIcon.textContent = '📍';
+                        }
+                    }
+                }
+            };
+
+            async function login(phone) {
+                const loginBtn = document.getElementById('login-btn');
+                const phoneInput = document.getElementById('login-phone');
+
+                try {
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = 'Verificando...';
+
+                    // Validar formato de teléfono
+                    const validation = validatePhone(phone);
+                    if (!validation.valid) {
+                        phoneInput.classList.add('error');
+                        throw new Error(validation.error);
+                    }
+
+                    phoneInput.classList.remove('error');
+                    const cleanPhone = validation.phone;
+
+                    console.log('Intentando login con teléfono:', cleanPhone);
+
+                    // Buscar domiciliario
+                    const { data, error } = await supabase
+                        .from('domiciliarios')
+                        .select('*')
+                        .eq('telefono', cleanPhone)
+                        .maybeSingle();
+
+                    console.log('Resultado de búsqueda:', { data, error });
+
+                    if (error) {
+                        console.error('Error de Supabase:', error);
+                        throw new Error('Error al conectar con el servidor: ' + error.message);
+                    }
+
+                    if (!data) {
+                        phoneInput.classList.add('error');
+                        throw new Error(
+                            `❌ Número ${cleanPhone} no registrado en el sistema.\n\nVerifica que:\n• El número esté registrado\n• Incluya +57 seguido de 10 dígitos\n• No tenga espacios ni guiones`
+                        );
+                    }
+
+                    currentDelivery = data;
+                    localStorage.setItem('fluxi_delivery', JSON.stringify(data));
+
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-screen').classList.remove('hidden');
+                    document.getElementById('delivery-name').textContent = data.nombre;
+
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+
+                    setupRealtimeSubscription();
+
+                    await loadOrders();
+                    setInterval(loadOrders, 30000);
+
+                    showAlert(`✅ ¡Bienvenido ${data.nombre}!`, 'success');
+                } catch (error) {
+                    console.error('Error en login:', error);
+                    showAlert(error.message, 'danger');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Iniciar Sesión';
+                }
+            }
+
+            async function loadOrders() {
+                if (!currentDelivery) {
+                    console.warn('⚠️ loadOrders llamado sin currentDelivery');
+                    return;
+                }
+
+                try {
+                    console.log('🔄 Cargando pedidos para domiciliario:', currentDelivery.id);
+
+                    // Obtener TODOS los pedidos asignados, ordenados por tiempo de aceptación (el primero aceptado primero)
+                    const { data: activeOrders, error } = await supabase
+                        .from('pedidos')
+                        .select('*')
+                        .eq('domiciliario_id', currentDelivery.id)
+                        .in('estado', ['asignado', 'en_camino'])
+                        .order('tiempo_aceptacion', { ascending: true }); // Primero el que fue aceptado primero
+
+                    if (error) {
+                        console.error('❌ Error al cargar pedidos:', error);
+                        throw error;
+                    }
+
+                    console.log(`📦 Pedidos encontrados: ${activeOrders?.length || 0}`);
+                    if (activeOrders && activeOrders.length > 0) {
+                        activeOrders.forEach((o) => {
+                            console.log(
+                                `   - ${o.id.substring(0, 8)}: estado=${o.estado}, tiempo_aceptacion=${o.tiempo_aceptacion}, tiempo_inicio=${o.tiempo_inicio}, tiempo_llegada=${o.tiempo_llegada}`
+                            );
+                        });
+
+                        // Renderizar TODOS los pedidos activos
+                        renderActiveOrders(activeOrders);
+
+                        // ✅ NO ACTIVAR UBICACIÓN AUTOMÁTICAMENTE
+                        // El domiciliario debe activarla manualmente con el botón
+                        if (!isLocationActive) {
+                            console.log(
+                                'ℹ️ Pedidos activos detectados. Recuerda activar tu ubicación con el botón verde.'
+                            );
+                            // Mostrar recordatorio visual si la ubicación no está activa
+                            const hayPedidosEnCamino = activeOrders.some(
+                                (o) => o.estado === 'en_camino'
+                            );
+                            if (hayPedidosEnCamino) {
+                                showAlert(
+                                    '📍 Recuerda activar tu ubicación con el botón verde para que puedan rastrearte.',
+                                    'warning'
+                                );
+                            }
+                        }
+
+                        // Iniciar temporizador si hay pedidos en camino
+                        const primerPedidoEnCamino = activeOrders.find(
+                            (o) => o.estado === 'en_camino'
+                        );
+                        if (primerPedidoEnCamino && !timerInterval) {
+                            const startTime = primerPedidoEnCamino.tiempo_inicio || Date.now();
+                            console.log(
+                                '⏱️ Recuperando temporizador desde:',
+                                new Date(startTime).toLocaleTimeString()
+                            );
+                            startTimer(startTime);
+                        }
+                    } else {
+                        activeOrder = null;
+                        document.getElementById('active-order-container').classList.add('hidden');
+                        stopTimer();
+
+                        await supabase
+                            .from('domiciliarios')
+                            .update({ estado: 'disponible' })
+                            .eq('id', currentDelivery.id);
+                    }
+
+                    // ✅ Filtrar pedidos según el tipo de domiciliario
+                    // Solo mostrar pedidos del tipo correspondiente (propio/rappi)
+                    const { data: availableOrders } = await supabase
+                        .from('pedidos')
+                        .select('*')
+                        .eq('estado', 'pendiente')
+                        .is('domiciliario_id', null)
+                        .eq('tipo_domiciliario', currentDelivery.tipo || 'propio')
+                        .order('created_at', { ascending: false });
+
+                    renderAvailableOrders(availableOrders || []);
+
+                    await updateStats();
+                } catch (error) {
+                    console.error('Error cargando pedidos:', error);
+                }
+            }
+
+            function renderActiveOrders(orders) {
+                document.getElementById('active-order-container').classList.remove('hidden');
+                document.getElementById('available-orders-container').classList.add('hidden');
+
+                console.log('🎨 Renderizando pedidos activos:', orders.length);
+                orders.forEach((o) => {
+                    console.log(
+                        `   - Pedido ${o.id.substring(0, 8)}: estado=${o.estado}, tiempo_llegada=${o.tiempo_llegada}`
+                    );
+                });
+
+                // Generar HTML para todos los pedidos
+                const cardsHTML = orders
+                    .map((order, index) => {
+                        const orderDisplay = order.consecutivo_dia
+                            ? `Pedido #${order.consecutivo_dia}`
+                            : `#${order.id.substring(0, 8)}`;
+                        return `
+                <div class="order-card active" style="margin-bottom: 15px;">
+                    <div class="order-header">
+                        <div class="order-id">${orderDisplay}</div>
+                        <span class="order-status ${order.estado}">${order.estado === 'asignado' ? 'Asignado' : 'En Camino'}</span>
+                    </div>
+                    <div class="order-detail">
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">👤 Cliente:</div>
+                            <div class="order-detail-value">${order.cliente}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">📞 Teléfono:</div>
+                            <div class="order-detail-value">${order.telefono_cliente}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">📍 Dirección:</div>
+                            <div class="order-detail-value">${order.direccion}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">🏘️ Barrio:</div>
+                            <div class="order-detail-value">${order.barrio || 'No especificado'}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">💰 Total:</div>
+                            <div class="order-detail-value">${formatCurrency(order.valor_pedido + order.valor_domicilio)}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">💳 Pago:</div>
+                            <div class="order-detail-value">${order.metodo_pago === 'efectivo' ? 'Efectivo' : order.metodo_pago === 'datafono' ? 'Datáfono' : 'Rappi'}</div>
+                        </div>
+                        ${
+                            order.notas
+                                ? `
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">📝 Notas:</div>
+                            <div class="order-detail-value">${order.notas}</div>
+                        </div>
+                        `
+                                : ''
+                        }
+                    </div>
+                    <div class="action-buttons">
+                        ${
+                            order.estado === 'asignado'
+                                ? '<button class="btn btn-success" onclick="window.startDeliveryRoute(\'' +
+                                  order.id +
+                                  '\')" style="width: 100%; margin-bottom: 10px;">🚀 Iniciar Entrega</button>'
+                                : ''
+                        }
+                        ${
+                            order.estado === 'en_camino'
+                                ? (() => {
+                                      console.log(
+                                          `   [Pedido ${order.id.substring(0, 8)}] tiempo_llegada = ${order.tiempo_llegada} (tipo: ${typeof order.tiempo_llegada})`
+                                      );
+                                      const tieneLlegada =
+                                          order.tiempo_llegada &&
+                                          order.tiempo_llegada !== null &&
+                                          order.tiempo_llegada !== 'null';
+                                      console.log(
+                                          `   [Pedido ${order.id.substring(0, 8)}] ¿Tiene llegada? ${tieneLlegada}`
+                                      );
+
+                                      if (!tieneLlegada) {
+                                          return (
+                                              '<button class="btn btn-warning" onclick="window.markArrival(\'' +
+                                              order.id +
+                                              '\')" style="width: 100%; margin-bottom: 10px;">📍 Llegué al Sitio</button>'
+                                          );
+                                      } else {
+                                          // Calcular tiempo de espera
+                                          const elapsedSeconds = Math.floor(
+                                              (Date.now() - order.tiempo_llegada) / 1000
+                                          );
+                                          const hours = Math.floor(elapsedSeconds / 3600);
+                                          const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+                                          const secs = elapsedSeconds % 60;
+                                          const timeStr =
+                                              hours > 0
+                                                  ? hours + 'h ' + minutes + 'm ' + secs + 's'
+                                                  : minutes > 0
+                                                    ? minutes + 'm ' + secs + 's'
+                                                    : secs + 's';
+
+                                          return (
+                                              '<div style="background: #27ae60; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center;">✅ Llegada registrada<br><small style="font-size: 12px;">⏱️ Tiempo en espera: ' +
+                                              timeStr +
+                                              '</small></div>' +
+                                              '<button class="btn btn-primary" onclick="window.completeDelivery(\'' +
+                                              order.id +
+                                              '\')" style="width: 100%; margin-bottom: 10px;">✅ Marcar Entregado</button>'
+                                          );
+                                      }
+                                  })()
+                                : ''
+                        }
+                        <button class="btn btn-danger" onclick="window.cancelOrder('${order.id}')" style="width: 100%; margin-bottom: 10px;">
+                            ❌ Cancelar Pedido
+                        </button>
+                    </div>
+                </div>
+            `;
+                    })
+                    .join('');
+
+                // Actualizar el título del contenedor
+                const tituloContainer = document.querySelector('#active-order-container h2');
+                if (tituloContainer) {
+                    tituloContainer.textContent =
+                        orders.length > 1
+                            ? `📦 Mis Pedidos (${orders.length})`
+                            : '📦 Pedido Activo';
+                }
+
+                document.getElementById('active-order-card').innerHTML = cardsHTML;
+            }
+
+            function renderAvailableOrders(orders) {
+                const container = document.getElementById('orders-list');
+
+                if (!activeOrder) {
+                    document
+                        .getElementById('available-orders-container')
+                        .classList.remove('hidden');
+                }
+
+                if (orders.length === 0) {
+                    container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <div class="empty-state-text">No hay pedidos disponibles</div>
+                        <div class="empty-state-subtext">Los nuevos pedidos aparecerán aquí automáticamente</div>
+                    </div>
+                `;
+                    return;
+                }
+
+                container.innerHTML = orders
+                    .map(
+                        (order) => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-id">#${order.id.substring(0, 8)}</div>
+                        <span class="order-status pendiente">Disponible</span>
+                    </div>
+                    <div class="order-detail">
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">👤 Cliente:</div>
+                            <div class="order-detail-value">${order.cliente}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">📍 Dirección:</div>
+                            <div class="order-detail-value">${order.direccion}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">💰 Total:</div>
+                            <div class="order-detail-value">${formatCurrency(order.valor_pedido + order.valor_domicilio)}</div>
+                        </div>
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">💳 Pago:</div>
+                            <div class="order-detail-value">${order.metodo_pago === 'efectivo' ? 'Efectivo' : order.metodo_pago === 'datafono' ? 'Datáfono' : 'Rappi'}</div>
+                        </div>
+                    </div>
+                    ${
+                        !isLocationActive
+                            ? `
+                        <div style="padding: 10px; background: rgba(52, 152, 219, 0.1); border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #2980b9; border-left: 3px solid #3498db;">
+                            ℹ️ Al aceptar este pedido, tu ubicación se activará automáticamente para rastrear la entrega
+                        </div>
+                    `
+                            : ''
+                    }
+                    <button class="btn btn-primary" onclick="window.acceptOrder('${order.id}')">
+                        ✅ Aceptar Pedido
+                    </button>
+                </div>
+            `
+                    )
+                    .join('');
+            }
+
+            /**
+             * Obtener fecha actual en formato YYYY-MM-DD según hora de Colombia
+             */
+            function getTodayDateColombia() {
+                const formatter = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'America/Bogota',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                });
+                return formatter.format(new Date());
+            }
+
+            async function updateStats() {
+                // Calcular inicio del día laboral (8 AM hoy en Colombia)
+                const ahora = new Date();
+                const today = getTodayDateColombia();
+                const inicioDiaLaboral = new Date(today + 'T08:00:00-05:00'); // Hora Colombia
+
+                let fechaInicio;
+                if (ahora < inicioDiaLaboral) {
+                    // Antes de las 8 AM, usar 8 AM de ayer
+                    const formatter = new Intl.DateTimeFormat('en-CA', {
+                        timeZone: 'America/Bogota',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                    });
+                    const ayer = new Date();
+                    ayer.setDate(ayer.getDate() - 1);
+                    const ayerStr = formatter.format(ayer);
+                    fechaInicio = new Date(ayerStr + 'T08:00:00-05:00');
+                } else {
+                    // Después de las 8 AM, usar 8 AM de hoy
+                    fechaInicio = inicioDiaLaboral;
+                }
+
+                const fechaFin = new Date();
+
+                console.log(
+                    '📊 Calculando estadísticas desde:',
+                    fechaInicio.toLocaleString('es-CO')
+                );
+
+                // Obtener solo pedidos desde las 8 AM del día laboral actual
+                const { data: allOrders } = await supabase
+                    .from('pedidos')
+                    .select('*')
+                    .eq('domiciliario_id', currentDelivery.id)
+                    .gte('created_at', fechaInicio.toISOString())
+                    .lte('created_at', fechaFin.toISOString());
+
+                const todayOrders = allOrders || [];
+
+                const completed = todayOrders.filter((o) => o.estado === 'entregado').length;
+                const active = todayOrders.filter(
+                    (o) => o.estado === 'asignado' || o.estado === 'en_camino'
+                ).length;
+
+                document.getElementById('orders-today').textContent = todayOrders.length;
+                document.getElementById('orders-completed').textContent = completed;
+                document.getElementById('orders-active').textContent = active;
+
+                console.log('📊 Estadísticas actualizadas:', {
+                    total: todayOrders.length,
+                    completados: completed,
+                    activos: active,
+                });
+
+                // Actualizar cuadre de caja
+                await updateCashBalance();
+            }
+
+            async function updateCashBalance() {
+                if (!currentDelivery) return;
+
+                try {
+                    // Obtener fecha actual en hora Colombia
+                    const ahora = new Date();
+                    const today = getTodayDateColombia();
+
+                    // USAR EL MISMO RANGO QUE INDEX: Todo el día de 00:00 a 23:59 (hora Colombia)
+                    // Esto asegura que ambas apps muestren los mismos valores
+                    const fechaInicio = new Date(today + 'T00:00:00-05:00');
+                    const fechaFin = new Date(today + 'T23:59:59-05:00');
+                    const fechaConfiguracion = today;
+
+                    console.log('📅 Rango de cuadre (igual que Index):', {
+                        inicio: fechaInicio.toLocaleString('es-CO'),
+                        fin: fechaFin.toLocaleString('es-CO'),
+                        fecha: today,
+                    });
+
+                    // Obtener valor de arranque del día laboral actual
+                    const { data: config } = await supabase
+                        .from('configuracion_diaria')
+                        .select('valor_arranque')
+                        .eq('fecha', fechaConfiguracion)
+                        .eq('domiciliario_id', currentDelivery.id)
+                        .single();
+
+                    const valorArranque = config?.valor_arranque || 0;
+
+                    // Obtener pedidos desde las 8 AM del día laboral actual
+                    // Incluir: asignado, en_camino, entregado (igual que Index)
+                    const { data: pedidosEntregados } = await supabase
+                        .from('pedidos')
+                        .select('*')
+                        .eq('domiciliario_id', currentDelivery.id)
+                        .in('estado', ['asignado', 'en_camino', 'entregado'])
+                        .gte('created_at', fechaInicio.toISOString())
+                        .lte('created_at', fechaFin.toISOString());
+
+                    console.log(
+                        '📊 Pedidos encontrados (asignado/en_camino/entregado):',
+                        pedidosEntregados?.length || 0
+                    );
+                    console.log('📊 Rango de fechas:', {
+                        inicio: fechaInicio.toISOString(),
+                        fin: fechaFin.toISOString(),
+                    });
+                    console.log('📊 Pedidos por estado:', {
+                        asignado:
+                            pedidosEntregados?.filter((p) => p.estado === 'asignado').length || 0,
+                        en_camino:
+                            pedidosEntregados?.filter((p) => p.estado === 'en_camino').length || 0,
+                        entregado:
+                            pedidosEntregados?.filter((p) => p.estado === 'entregado').length || 0,
+                    });
+
+                    // Calcular efectivo y datáfono (VALOR PEDIDO + VALOR DOMICILIO)
+                    let efectivoPedido = 0;
+                    let efectivoDomicilio = 0;
+                    let datafonoPedido = 0;
+                    let datafonoDomicilio = 0;
+                    let numeroDatafono = null;
+                    let cantidadEfectivo = 0;
+                    let cantidadDatafono = 0;
+
+                    (pedidosEntregados || []).forEach((pedido) => {
+                        const valorPedido = pedido.valor_pedido || 0;
+                        const valorDomicilio = pedido.valor_domicilio || 0;
+                        const valorTotal = valorPedido + valorDomicilio;
+
+                        console.log('💵 Procesando pedido:', {
+                            id: pedido.id.substring(0, 8),
+                            metodo_pago: pedido.metodo_pago,
+                            valor_pedido: valorPedido,
+                            valor_domicilio: valorDomicilio,
+                            valor_total: valorTotal,
+                        });
+
+                        if (pedido.metodo_pago === 'efectivo') {
+                            efectivoPedido += valorPedido;
+                            efectivoDomicilio += valorDomicilio;
+                            cantidadEfectivo++;
+                        } else if (pedido.metodo_pago === 'datafono') {
+                            datafonoPedido += valorPedido;
+                            datafonoDomicilio += valorDomicilio;
+                            cantidadDatafono++;
+                            if (pedido.numero_datafono && !numeroDatafono) {
+                                numeroDatafono = pedido.numero_datafono;
+                            }
+                        } else if (pedido.metodo_pago === 'rappi') {
+                            // Rappi maneja sus propios pagos - no se incluye en el cuadre
+                            console.log('📱 Pago Rappi - No incluido en cuadre:', pedido.id);
+                        }
+                    });
+
+                    // Calcular totales
+                    const efectivoRecaudado = efectivoPedido + efectivoDomicilio;
+                    const datafonoTotal = datafonoPedido + datafonoDomicilio;
+                    const totalEfectivo = valorArranque + efectivoRecaudado;
+                    const totalGeneral = totalEfectivo + datafonoTotal;
+
+                    console.log('💰 Cuadre actualizado (desglosado):', {
+                        valorArranque,
+                        efectivo: {
+                            pedidos: efectivoPedido,
+                            domicilios: efectivoDomicilio,
+                            total: efectivoRecaudado,
+                            cantidad: cantidadEfectivo,
+                        },
+                        datafono: {
+                            pedidos: datafonoPedido,
+                            domicilios: datafonoDomicilio,
+                            total: datafonoTotal,
+                            cantidad: cantidadDatafono,
+                        },
+                        totalEfectivo,
+                        totalGeneral,
+                    });
+
+                    // Actualizar UI
+                    document.getElementById('balance-arranque').textContent =
+                        formatCurrency(valorArranque);
+                    document.getElementById('balance-efectivo').textContent =
+                        formatCurrency(efectivoRecaudado);
+                    document.getElementById('balance-efectivo-desglose').textContent =
+                        `Pedidos: ${formatCurrency(efectivoPedido)} | Domicilios: ${formatCurrency(efectivoDomicilio)}`;
+                    document.getElementById('balance-efectivo-cantidad').textContent =
+                        `${cantidadEfectivo} pedido${cantidadEfectivo !== 1 ? 's' : ''}`;
+                    document.getElementById('balance-total-efectivo').textContent =
+                        formatCurrency(totalEfectivo);
+                    document.getElementById('balance-tarjetas').textContent =
+                        formatCurrency(datafonoTotal);
+                    document.getElementById('balance-datafono-desglose').textContent =
+                        `Pedidos: ${formatCurrency(datafonoPedido)} | Domicilios: ${formatCurrency(datafonoDomicilio)}`;
+                    document.getElementById('balance-total-general').textContent =
+                        formatCurrency(totalGeneral);
+
+                    // Actualizar info del datáfono con cantidad de pedidos
+                    const datafonoInfo = numeroDatafono
+                        ? `Datáfono: ${numeroDatafono} | ${cantidadDatafono} pedido${cantidadDatafono !== 1 ? 's' : ''}`
+                        : cantidadDatafono > 0
+                          ? `${cantidadDatafono} pedido${cantidadDatafono !== 1 ? 's' : ''} sin datáfono`
+                          : 'Sin datáfono asignado';
+                    document.getElementById('balance-datafono-info').textContent = datafonoInfo;
+
+                    // Actualizar texto del período (mismo que Index)
+                    const periodInfo = `📅 Cuadre del día: ${today}`;
+                    document.getElementById('balance-period-info').textContent = periodInfo;
+                } catch (error) {
+                    console.error('❌ Error actualizando cuadre de caja:', error);
+                }
+            }
+
+            window.acceptOrder = async function (orderId) {
+                if (activeOrder) {
+                    showAlert(
+                        'Ya tienes un pedido activo. Complétalo antes de aceptar otro.',
+                        'warning'
+                    );
+                    return;
+                }
+
+                // CRÍTICO: Verificar que la ubicación esté activa, si no, activarla automáticamente
+                if (!isLocationActive) {
+                    console.log('📍 Ubicación no activa, activando automáticamente...');
+                    showAlert('🔄 Activando tu ubicación automáticamente...', 'info');
+
+                    try {
+                        const locationActivated = await startLocationTracking();
+                        if (!locationActivated) {
+                            throw new Error('No se pudo activar la ubicación');
+                        }
+                        console.log('✅ Ubicación activada exitosamente');
+                        // Esperar 2 segundos para asegurar que se obtenga la primera ubicación
+                        await new Promise((resolve) => setTimeout(resolve, 2000));
+                    } catch (error) {
+                        console.error('❌ Error al activar ubicación:', error);
+                        showAlert(
+                            '❌ No se pudo activar tu ubicación. Por favor, actívala manualmente con el botón verde arriba.',
+                            'danger'
+                        );
+                        return;
+                    }
+                }
+
+                // Deshabilitar botón temporalmente para evitar múltiples clicks
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    console.log('🔍 Iniciando proceso de aceptación de pedido:', orderId);
+
+                    // Verificar que efectivamente tenemos una ubicación guardada y reciente
+                    const { data: deliveryData } = await supabase
+                        .from('domiciliarios')
+                        .select('ubicacion')
+                        .eq('id', currentDelivery.id)
+                        .single();
+
+                    console.log('🔍 deliveryData:', deliveryData);
+
+                    if (!deliveryData || !deliveryData.ubicacion || !deliveryData.ubicacion.lat) {
+                        throw new Error(
+                            '⚠️ No se detectó tu ubicación.\n\n' +
+                                '1. Asegúrate de haber activado tu ubicación (botón verde arriba)\n' +
+                                '2. Espera unos segundos a que el GPS se active\n' +
+                                '3. Intenta aceptar el pedido nuevamente\n\n' +
+                                'Si el problema persiste, recarga la página.'
+                        );
+                    }
+
+                    // Verificar que la ubicación sea reciente (menos de 5 minutos)
+                    const locationTimestamp = new Date(deliveryData.ubicacion.timestamp);
+                    const now = new Date();
+                    const diffMinutes = (now - locationTimestamp) / 1000 / 60;
+
+                    if (diffMinutes > 5) {
+                        throw new Error(
+                            '⚠️ Tu ubicación no está actualizada (última actualización hace ' +
+                                Math.round(diffMinutes) +
+                                ' minutos).\n\n' +
+                                '1. Verifica que el botón de ubicación esté verde\n' +
+                                '2. Espera unos segundos\n' +
+                                '3. Intenta aceptar el pedido nuevamente\n\n' +
+                                'Si el problema persiste, desactiva y vuelve a activar tu ubicación.'
+                        );
+                    }
+
+                    console.log('✅ Ubicación verificada y actual:', deliveryData.ubicacion);
+
+                    // Aceptar el pedido
+                    const updateData = {
+                        estado: 'asignado',
+                        domiciliario_id: currentDelivery.id,
+                        domiciliario_nombre: currentDelivery.nombre,
+                        domiciliario_telefono: currentDelivery.telefono,
+                        tiempo_aceptacion: Date.now(),
+                        updated_at: new Date().toISOString(),
+                    };
+
+                    console.log('📝 Actualizando pedido con datos:', updateData);
+
+                    const { data: updatedOrder, error } = await supabase
+                        .from('pedidos')
+                        .update(updateData)
+                        .eq('id', orderId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('❌ Error al actualizar pedido:', error);
+                        throw error;
+                    }
+
+                    console.log('✅ Pedido actualizado exitosamente:', updatedOrder);
+
+                    // Actualizar estado del domiciliario
+                    const { error: deliveryError } = await supabase
+                        .from('domiciliarios')
+                        .update({ estado: 'ocupado' })
+                        .eq('id', currentDelivery.id);
+
+                    if (deliveryError) {
+                        console.error(
+                            '⚠️ Error al actualizar estado del domiciliario:',
+                            deliveryError
+                        );
+                    }
+
+                    showAlert(
+                        '✅ ¡Pedido aceptado! Tu ubicación está siendo rastreada automáticamente. Recuerda iniciar la entrega cuando salgas.',
+                        'success'
+                    );
+
+                    console.log('🔄 Recargando pedidos...');
+                    await loadOrders();
+                    console.log('✅ Pedidos recargados');
+                } catch (error) {
+                    console.error('❌ Error al aceptar el pedido:', error);
+                    showAlert('❌ Error: ' + error.message, 'danger');
+
+                    // Si falló, verificar que la ubicación siga activa
+                    if (!isLocationActive) {
+                        stopLocationTracking();
+                    }
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            /**
+             * Iniciar entrega - Cuando hay múltiples pedidos, todos inician juntos
+             */
+            window.startDeliveryRoute = async function (triggeredOrderId) {
+                console.log('🚀 ========== INICIANDO ENTREGA ==========');
+                console.log('   - Pedido que disparó la entrega:', triggeredOrderId);
+                console.log('   - Estado de ubicación (isLocationActive):', isLocationActive);
+
+                // 🔒 VALIDACIÓN: Verificar que la ubicación esté activa
+                if (!isLocationActive) {
+                    console.warn('⚠️ Intento de iniciar entrega sin ubicación activa');
+                    console.warn('   - isLocationActive:', isLocationActive);
+                    console.warn('   - locationWatchId:', locationWatchId);
+                    console.warn('   - locationUpdateInterval:', locationUpdateInterval);
+                    showAlert(
+                        '⚠️ Debes tener la ubicación activada para iniciar la entrega. Por favor activa tu ubicación primero.',
+                        'warning'
+                    );
+                    return;
+                }
+
+                // Deshabilitar botones temporalmente
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    const startTime = Date.now();
+                    console.log('   - Tiempo de inicio:', new Date(startTime).toLocaleTimeString());
+
+                    // Obtener TODOS los pedidos asignados al domiciliario
+                    const { data: pedidosAsignados, error: fetchError } = await supabase
+                        .from('pedidos')
+                        .select('*')
+                        .eq('domiciliario_id', currentDelivery.id)
+                        .eq('estado', 'asignado');
+
+                    if (fetchError) throw fetchError;
+
+                    if (!pedidosAsignados || pedidosAsignados.length === 0) {
+                        console.warn('⚠️ No se encontraron pedidos asignados');
+                        showAlert(
+                            '⚠️ No tienes pedidos asignados para iniciar entrega.',
+                            'warning'
+                        );
+                        return;
+                    }
+
+                    console.log(
+                        `   - Se encontraron ${pedidosAsignados.length} pedido(s) asignado(s)`
+                    );
+                    console.log(
+                        '   - Pedidos:',
+                        pedidosAsignados.map((p) => p.id.substring(0, 8))
+                    );
+
+                    // Actualizar TODOS los pedidos asignados a "en_camino" con el mismo tiempo de inicio
+                    const pedidosIds = pedidosAsignados.map((p) => p.id);
+
+                    const { data: updatedOrders, error: updateError } = await supabase
+                        .from('pedidos')
+                        .update({
+                            estado: 'en_camino',
+                            tiempo_inicio: startTime,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .in('id', pedidosIds)
+                        .select();
+
+                    if (updateError) {
+                        console.error('❌ Error al actualizar pedidos:', updateError);
+                        throw updateError;
+                    }
+
+                    console.log(
+                        `✅ ${updatedOrders.length} pedido(s) actualizado(s) a "en_camino"`
+                    );
+
+                    // Iniciar el temporizador compartido
+                    startTimer(startTime);
+
+                    const mensajeExito =
+                        updatedOrders.length > 1
+                            ? `✅ ¡Entrega iniciada! ${updatedOrders.length} pedidos en camino. El temporizador está corriendo.`
+                            : `✅ ¡Entrega iniciada! El temporizador está corriendo.`;
+
+                    showAlert(mensajeExito, 'success');
+
+                    console.log('🔄 Recargando pedidos...');
+                    await loadOrders();
+                    console.log('✅ ========== ENTREGA INICIADA EXITOSAMENTE ==========');
+                } catch (error) {
+                    console.error('❌ ========== ERROR AL INICIAR ENTREGA ==========');
+                    console.error('Error completo:', error);
+                    showAlert('❌ Error al iniciar entrega: ' + error.message, 'danger');
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            window.startDelivery = async function (orderId) {
+                console.log('🚀 ========== INICIANDO ENTREGA ==========');
+                console.log('   - Pedido ID:', orderId);
+
+                // 🔒 VALIDACIÓN: Verificar que la ubicación esté activa
+                if (!isLocationActive) {
+                    console.warn('⚠️ Intento de iniciar entrega sin ubicación activa');
+                    showAlert(
+                        '⚠️ Debes tener la ubicación activada para iniciar la entrega. Por favor activa tu ubicación primero.',
+                        'warning'
+                    );
+                    return;
+                }
+
+                // Deshabilitar botones temporalmente
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    const startTime = Date.now();
+                    console.log('   - Tiempo de inicio:', new Date(startTime).toLocaleTimeString());
+
+                    const updateData = {
+                        estado: 'en_camino',
+                        updated_at: new Date().toISOString(),
+                    };
+
+                    console.log('   - Datos a actualizar:', updateData);
+
+                    const { data: updatedOrder, error } = await supabase
+                        .from('pedidos')
+                        .update(updateData)
+                        .eq('id', orderId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('❌ Error de Supabase:', error);
+                        throw error;
+                    }
+
+                    console.log('✅ Pedido actualizado:', updatedOrder);
+
+                    startTimer(startTime);
+                    showAlert('✅ ¡Entrega iniciada! El temporizador está corriendo.', 'success');
+
+                    console.log('🔄 Recargando pedidos...');
+                    await loadOrders();
+                    console.log('✅ ========== ENTREGA INICIADA EXITOSAMENTE ==========');
+                } catch (error) {
+                    console.error('❌ ========== ERROR AL INICIAR ENTREGA ==========');
+                    console.error('Error completo:', error);
+                    showAlert('❌ Error al iniciar entrega: ' + error.message, 'danger');
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            /**
+             * Marcar llegada al sitio de entrega
+             */
+            window.markArrival = async function (orderId) {
+                console.log('📍 ========== MARCANDO LLEGADA AL SITIO ==========');
+                console.log('   - Pedido ID:', orderId);
+                console.log('   - Tipo de orderId:', typeof orderId);
+
+                if (!orderId) {
+                    console.error('❌ Order ID es null o undefined');
+                    showAlert('❌ Error: No se pudo identificar el pedido', 'error');
+                    return;
+                }
+
+                if (!confirm('¿Confirmas que llegaste al sitio de entrega?')) {
+                    console.log('⏸️ Usuario canceló la confirmación');
+                    return;
+                }
+
+                // Deshabilitar botones temporalmente
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    const arrivalTime = Date.now();
+                    console.log(
+                        '   - Tiempo de llegada:',
+                        new Date(arrivalTime).toLocaleTimeString()
+                    );
+                    console.log('   - Timestamp:', arrivalTime);
+
+                    // Actualizar ubicación al marcar llegada
+                    if (isLocationActive) {
+                        try {
+                            await updateLocation();
+                            console.log('✅ Ubicación actualizada al marcar llegada');
+                        } catch (locError) {
+                            console.warn(
+                                '⚠️ Error al actualizar ubicación (no crítico):',
+                                locError
+                            );
+                        }
+                    }
+
+                    console.log('   - Actualizando en Supabase...');
+                    const { data: updatedOrder, error } = await supabase
+                        .from('pedidos')
+                        .update({
+                            tiempo_llegada: arrivalTime,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', orderId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('❌ Error de Supabase:', error);
+                        throw error;
+                    }
+
+                    console.log('✅ Pedido actualizado en Supabase:', updatedOrder);
+                    console.log('   - tiempo_llegada guardado:', updatedOrder.tiempo_llegada);
+                    console.log('✅ Llegada registrada exitosamente');
+                    showAlert(
+                        '✅ Llegada registrada. Ahora puedes marcar como entregado cuando completes.',
+                        'success'
+                    );
+
+                    // Pequeña espera para que Supabase procese
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+
+                    // Recargar pedidos activos
+                    console.log('   - Recargando pedidos activos...');
+                    await loadOrders();
+                    console.log('✅ Pedidos recargados');
+                } catch (error) {
+                    console.error('❌ Error al marcar llegada:', error);
+                    console.error('   - Error stack:', error.stack);
+                    showAlert('❌ Error al registrar llegada: ' + error.message, 'error');
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            window.completeDelivery = async function (orderId) {
+                console.log('✅ ========== COMPLETANDO ENTREGA ==========');
+                console.log('   - Pedido ID:', orderId);
+
+                // VALIDACIÓN: Verificar que el pedido esté en estado "en_camino"
+                if (activeOrder && activeOrder.estado !== 'en_camino') {
+                    console.warn('⚠️ Intento de completar pedido sin iniciar');
+                    showAlert(
+                        '⚠️ Debes iniciar la entrega antes de marcarla como entregada. Presiona "🚀 Iniciar Entrega" primero.',
+                        'warning'
+                    );
+                    return;
+                }
+
+                if (!confirm('¿Confirmas que el pedido fue entregado?')) return;
+
+                // Deshabilitar botones temporalmente
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    // 🆕 ACTUALIZAR UBICACIÓN UNA ÚLTIMA VEZ ANTES DE COMPLETAR
+                    console.log('📍 Actualizando ubicación final antes de completar...');
+                    try {
+                        if (isLocationActive) {
+                            await updateLocation();
+                            console.log('✅ Ubicación final actualizada');
+                        } else {
+                            console.warn(
+                                '⚠️ Ubicación no estaba activa, no se pudo actualizar ubicación final'
+                            );
+                        }
+                    } catch (locError) {
+                        console.warn(
+                            '⚠️ Error al actualizar ubicación final (no crítico):',
+                            locError
+                        );
+                        // No detenemos el proceso por este error
+                    }
+
+                    const deliveryTime = Date.now();
+                    console.log(
+                        '   - Tiempo de entrega:',
+                        new Date(deliveryTime).toLocaleTimeString()
+                    );
+
+                    const { data: updatedOrder, error } = await supabase
+                        .from('pedidos')
+                        .update({
+                            estado: 'entregado',
+                            tiempo_entrega: deliveryTime,
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', orderId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('❌ Error de Supabase:', error);
+                        throw error;
+                    }
+
+                    console.log('✅ Pedido marcado como entregado:', updatedOrder);
+
+                    // Actualizar estado del domiciliario a disponible
+                    console.log('📝 Actualizando estado del domiciliario a disponible...');
+                    console.log('   - Domiciliario ID:', currentDelivery.id);
+
+                    const { data: deliveryData, error: deliveryError } = await supabase
+                        .from('domiciliarios')
+                        .update({
+                            estado: 'disponible',
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', currentDelivery.id)
+                        .select();
+
+                    if (deliveryError) {
+                        console.error(
+                            '❌ Error al actualizar estado del domiciliario:',
+                            deliveryError
+                        );
+                        throw new Error(
+                            'No se pudo actualizar el estado del domiciliario: ' +
+                                deliveryError.message
+                        );
+                    }
+
+                    console.log(
+                        '✅ Estado del domiciliario actualizado a disponible:',
+                        deliveryData
+                    );
+
+                    stopTimer();
+                    stopLocationTracking();
+
+                    showAlert('✅ ¡Pedido completado exitosamente! 🎉', 'success');
+
+                    console.log('🔄 Recargando pedidos...');
+                    await loadOrders();
+                    console.log('✅ ========== ENTREGA COMPLETADA EXITOSAMENTE ==========');
+                } catch (error) {
+                    console.error('❌ ========== ERROR AL COMPLETAR ENTREGA ==========');
+                    console.error('Error completo:', error);
+                    showAlert('❌ Error al completar pedido: ' + error.message, 'danger');
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            window.cancelOrder = async function (orderId) {
+                console.log('❌ ========== CANCELANDO PEDIDO ==========');
+                console.log('   - Pedido ID:', orderId);
+
+                if (
+                    !confirm(
+                        '¿Estás seguro de cancelar este pedido?\n\nEsta acción no se puede deshacer.'
+                    )
+                )
+                    return;
+
+                // Deshabilitar botones temporalmente
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach((btn) => (btn.disabled = true));
+
+                try {
+                    // Actualizar el pedido a estado cancelado
+                    const { data: updatedOrder, error } = await supabase
+                        .from('pedidos')
+                        .update({
+                            estado: 'cancelado',
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', orderId)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        console.error('❌ Error de Supabase:', error);
+                        throw error;
+                    }
+
+                    console.log('✅ Pedido cancelado:', updatedOrder);
+
+                    // Actualizar estado del domiciliario a disponible
+                    console.log('📝 Actualizando estado del domiciliario a disponible...');
+                    console.log('   - Domiciliario ID:', currentDelivery.id);
+
+                    const { data: deliveryData, error: deliveryError } = await supabase
+                        .from('domiciliarios')
+                        .update({
+                            estado: 'disponible',
+                            updated_at: new Date().toISOString(),
+                        })
+                        .eq('id', currentDelivery.id)
+                        .select();
+
+                    if (deliveryError) {
+                        console.error(
+                            '❌ Error al actualizar estado del domiciliario:',
+                            deliveryError
+                        );
+                        throw new Error(
+                            'No se pudo actualizar el estado del domiciliario: ' +
+                                deliveryError.message
+                        );
+                    }
+
+                    console.log(
+                        '✅ Estado del domiciliario actualizado a disponible:',
+                        deliveryData
+                    );
+
+                    // Detener el temporizador si estaba activo
+                    stopTimer();
+
+                    // 🔴 CRÍTICO: Detener el tracking de ubicación
+                    stopLocationTracking();
+
+                    showAlert('❌ Pedido cancelado', 'info');
+
+                    console.log('🔄 Recargando pedidos...');
+                    await loadOrders();
+                    console.log('✅ ========== PEDIDO CANCELADO EXITOSAMENTE ==========');
+                } catch (error) {
+                    console.error('❌ ========== ERROR AL CANCELAR PEDIDO ==========');
+                    console.error('Error completo:', error);
+                    showAlert('❌ Error al cancelar pedido: ' + error.message, 'danger');
+                } finally {
+                    // Rehabilitar botones
+                    buttons.forEach((btn) => (btn.disabled = false));
+                }
+            };
+
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('login-phone').value;
+                await login(phone);
+            });
+
+            document.getElementById('login-phone').addEventListener('input', function () {
+                this.classList.remove('error');
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                if (confirm('¿Seguro que deseas cerrar sesión?')) {
+                    localStorage.removeItem('fluxi_delivery');
+                    stopLocationTracking();
+                    stopTimer();
+                    if (realtimeChannel) {
+                        supabase.removeChannel(realtimeChannel);
+                    }
+                    location.reload();
+                }
+            });
+
+            window.addEventListener('load', async () => {
+                // Agregar badge de versión en la UI
+                setTimeout(() => {
+                    const versionBadge = document.createElement('div');
+                    versionBadge.style.cssText = `
+                    position: fixed;
+                    bottom: 10px;
+                    right: 10px;
+                    background: rgba(102, 126, 234, 0.9);
+                    color: white;
+                    padding: 5px 12px;
+                    border-radius: 15px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    z-index: 1000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    cursor: pointer;
+                `;
+                    versionBadge.textContent = `v${APP_VERSION}`;
+                    versionBadge.title = 'Toca para ver información';
+                    versionBadge.onclick = () => {
+                        showAlert(
+                            `Fluxi Domiciliario v${APP_VERSION}\n\nÚltima actualización: 24-Oct-2024\n\nMejoras v2.2.0:\n• Tracking en segundo plano\n• Control manual de ubicación\n• Ubicación al completar entregas`,
+                            'info'
+                        );
+                    };
+                    document.body.appendChild(versionBadge);
+                }, 1000);
+
+                const saved = localStorage.getItem('fluxi_delivery');
+                if (saved) {
+                    currentDelivery = JSON.parse(saved);
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-screen').classList.remove('hidden');
+                    document.getElementById('delivery-name').textContent = currentDelivery.nombre;
+
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+
+                    setupRealtimeSubscription();
+
+                    await loadOrders();
+                    setInterval(loadOrders, 30000);
+                }
+            });
+        </script>
+    </body>
+</html>
