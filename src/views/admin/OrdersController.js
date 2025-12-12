@@ -1009,7 +1009,7 @@ export class OrdersController {
 
             // Get the app URL - use production URL if in production, otherwise localhost
             const appBaseUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:5173'
+                ? window.location.origin
                 : window.location.origin;
             const domiciliariosUrl = `${appBaseUrl}/domiciliarios`;
 
