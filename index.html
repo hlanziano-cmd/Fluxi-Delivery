@@ -1627,7 +1627,7 @@
             const cleanPhone = phone.replace(/\D/g, '');
             const msg = `¡Hola ${nombre}! 🏍️\n\n` +
                        `Tienes un nuevo pedido asignado en Fluxi.\n\n` +
-                       `📦 Pedido #${consecutivo}\n\n` +
+                       `📦 Pedido ${consecutivo}\n\n` +
                        `📱 Abre tu app para aceptar el pedido:\n` +
                        `${APP_URL}\n\n` +
                        `Recuerda que debes activar tu ubicación para poder iniciar la entrega.\n\n` +
@@ -2334,10 +2334,9 @@
                 const row = tbody.insertRow();
                 // Mostrar consecutivo si existe y tiene domiciliario asignado
                 let orderDisplay;
-                if (order.consecutivo_dia && order.domiciliario_nombre && order.tipo_domiciliario === 'propio') {
-                    // Mostrar nombre del domiciliario + consecutivo
-                    const nombreCorto = order.domiciliario_nombre.split(' ')[0]; // Primer nombre
-                    orderDisplay = `${nombreCorto} #${order.consecutivo_dia}`;
+                if (order.consecutivo_domiciliario) {
+                    // El consecutivo_domiciliario ya viene con formato NOMBRE#NUMERO desde la BD
+                    orderDisplay = order.consecutivo_domiciliario;
                 } else if (order.consecutivo_dia) {
                     orderDisplay = `#${order.consecutivo_dia}`;
                 } else {
@@ -2790,9 +2789,6 @@
                         // ✅ NO cambiar el estado del domiciliario a "ocupado"
                         // Esto permite asignar múltiples pedidos al mismo domiciliario
                         // El estado se actualizará cuando inicie la entrega
-
-                        // Enviar notificación de WhatsApp con el consecutivo
-                        sendWhatsAppNotification(driver.telefono, driver.nombre, consecutivo);
                     }
                 }
 
@@ -2811,8 +2807,17 @@
 
                 console.log('✅ Pedido actualizado en BD:', updatedOrder);
 
+                // Enviar notificación de WhatsApp usando el consecutivo_domiciliario generado por el trigger
+                if (tipo === 'propio' && updatedOrder && updatedOrder[0]) {
+                    const driver = allDeliveryDrivers.find(d => d.id === domiciliarioId);
+                    const consecutivoDisplay = updatedOrder[0].consecutivo_domiciliario || consecutivo;
+                    if (driver && consecutivoDisplay) {
+                        sendWhatsAppNotification(driver.telefono, driver.nombre, consecutivoDisplay);
+                    }
+                }
+
                 const successMsg = consecutivo
-                    ? `Pedido #${consecutivo} asignado correctamente`
+                    ? `Pedido asignado correctamente`
                     : 'Pedido asignado correctamente';
                 showAlert('orders-alert', 'success', successMsg);
 
@@ -3447,11 +3452,13 @@
 
             try {
                 let orderId;
+                let createdOrderData;
                 if (currentOrderId) {
                     // Al editar, NO cambiar el estado del pedido
-                    const { data, error } = await supabase.from('pedidos').update(orderData).eq('id', currentOrderId);
+                    const { data, error } = await supabase.from('pedidos').update(orderData).eq('id', currentOrderId).select();
                     if (error) throw error;
                     orderId = currentOrderId;
+                    createdOrderData = data ? data[0] : null;
                     showAlert('orders-alert', 'success', 'Pedido actualizado');
                 } else {
                     // Solo al crear un nuevo pedido, establecer estado como pendiente
@@ -3464,6 +3471,7 @@
                         throw error;
                     }
                     orderId = data[0].id;
+                    createdOrderData = data[0];
                     console.log('✅ Pedido creado exitosamente con ID:', orderId);
                     console.log('   - created_at:', data[0].created_at);
                     showAlert('orders-alert', 'success', 'Pedido creado');
@@ -3474,8 +3482,8 @@
                         .update({ estado: 'ocupado' })
                         .eq('id', orderData.domiciliario_id);
 
-                    // Si hay consecutivo, incluirlo en la notificación
-                    const consecutivo = orderData.consecutivo_dia || '?';
+                    // Usar consecutivo_domiciliario generado por el trigger, o el consecutivo_dia como fallback
+                    const consecutivo = createdOrderData?.consecutivo_domiciliario || orderData.consecutivo_dia || '?';
                     sendWhatsAppNotification(orderData.domiciliario_telefono, orderData.domiciliario_nombre, consecutivo);
                 }
 
@@ -4624,10 +4632,9 @@
 
                 // Formato de ID igual que en Gestión de Pedidos
                 let orderDisplay;
-                if (pedido.consecutivo_dia && pedido.domiciliarios?.nombre) {
-                    // Mostrar nombre del domiciliario + consecutivo
-                    const nombreCorto = pedido.domiciliarios.nombre.split(' ')[0]; // Primer nombre
-                    orderDisplay = `${nombreCorto} #${pedido.consecutivo_dia}`;
+                if (pedido.consecutivo_domiciliario) {
+                    // El consecutivo_domiciliario ya viene con formato NOMBRE#NUMERO desde la BD
+                    orderDisplay = pedido.consecutivo_domiciliario;
                 } else if (pedido.consecutivo_dia) {
                     orderDisplay = `#${pedido.consecutivo_dia}`;
                 } else {
