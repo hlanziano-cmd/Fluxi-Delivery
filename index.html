@@ -1453,15 +1453,15 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script>
         const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
-        
+
         // Detectar automáticamente la URL de la app
         const APP_URL = window.location.origin + window.location.pathname.replace('index.html', '') + 'app-domiciliarios.html';
-        
+
         // Mostrar URL en configuración
         setTimeout(() => {
             const urlDisplay = document.getElementById('app-url-display');
@@ -1472,9 +1472,8 @@
 
         let supabase = null;
         try {
-            supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             // Exponer supabase globalmente para acceso desde consola y depuración
-            window.supabase = supabase;
             window.supabaseClient = supabase; // Alias adicional
             console.log('%c✅ Fluxi conectado', 'color: green; font-weight: bold;');
             console.log('%c📡 Supabase URL:', 'color: blue;', SUPABASE_URL);
