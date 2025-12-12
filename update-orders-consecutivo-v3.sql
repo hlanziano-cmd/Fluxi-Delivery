@@ -24,8 +24,9 @@ ON pedidos(domiciliario_id, consecutivo_domiciliario);
 CREATE INDEX IF NOT EXISTS idx_pedidos_voucher_estado
 ON pedidos(voucher_estado);
 
-CREATE INDEX IF NOT EXISTS idx_pedidos_created_date
-ON pedidos(DATE(created_at));
+-- Index on created_at for date queries (will still be efficient for date comparisons)
+CREATE INDEX IF NOT EXISTS idx_pedidos_created_at
+ON pedidos(created_at);
 
 -- Update existing records to have default voucher_estado
 UPDATE pedidos
