@@ -1,0 +1,312 @@
+<!-- Orders Management Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-orders-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h1 class="page-title">Gestión de Pedidos</h1>
+                    <p class="page-description">Administra y monitorea pedidos</p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-primary" id="btn-create-order">➕ Nuevo Pedido</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="orders-alert" class="hidden"></div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid stats-grid-5">
+            <div class="stat-card stat-warning">
+                <div class="stat-header">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+                <div class="stat-value" id="stat-pendiente">--</div>
+                <div class="stat-change">Sin asignar</div>
+            </div>
+
+            <div class="stat-card stat-info">
+                <div class="stat-header">
+                    <div class="stat-label">Asignados</div>
+                    <div class="stat-icon">📋</div>
+                </div>
+                <div class="stat-value" id="stat-asignado">--</div>
+                <div class="stat-change">Con domiciliario</div>
+            </div>
+
+            <div class="stat-card stat-primary">
+                <div class="stat-header">
+                    <div class="stat-label">En Camino</div>
+                    <div class="stat-icon">🚴</div>
+                </div>
+                <div class="stat-value" id="stat-en-camino">--</div>
+                <div class="stat-change">En ruta</div>
+            </div>
+
+            <div class="stat-card stat-success">
+                <div class="stat-header">
+                    <div class="stat-label">Entregados</div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-value" id="stat-entregado">--</div>
+                <div class="stat-change">Completados hoy</div>
+            </div>
+
+            <div class="stat-card stat-danger">
+                <div class="stat-header">
+                    <div class="stat-label">Cancelados</div>
+                    <div class="stat-icon">❌</div>
+                </div>
+                <div class="stat-value" id="stat-cancelado">--</div>
+                <div class="stat-change">Hoy</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="card-body">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="filter-status">Estado</label>
+                        <select id="filter-status" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="asignado">Asignado</option>
+                            <option value="en_camino">En Camino</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-delivery">Domiciliario</label>
+                        <select id="filter-delivery" class="filter-select">
+                            <option value="">Todos los domiciliarios</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-date">Fecha</label>
+                        <input type="date" id="filter-date" class="filter-input" />
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary btn-sm" id="btn-clear-filters">
+                            🔄 Limpiar
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btn-apply-filters">
+                            🔍 Filtrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Lista de Pedidos</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh-orders">
+                        🔄 Actualizar
+                    </button>
+                    <button class="btn btn-success btn-sm" id="btn-export-orders">
+                        📥 Exportar
+                    </button>
+                </div>
+            </div>
+            <div id="orders-table-container"></div>
+        </div>
+    </main>
+</div>
+
+<style>
+    /* Stats Grid 5 columns */
+    .stats-grid-5 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    /* Filters */
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--color-dark);
+        font-size: var(--font-size-sm);
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 8px 12px;
+        border: 1px solid rgba(79, 123, 247, 0.2);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        transition: all 0.2s ease;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Stat card variants */
+    .stat-card.stat-primary {
+        background: linear-gradient(135deg, #4f7bf7 0%, #3a5fd9 100%);
+    }
+
+    .stat-card.stat-primary .stat-label,
+    .stat-card.stat-primary .stat-value,
+    .stat-card.stat-primary .stat-change {
+        color: var(--color-white);
+    }
+
+    /* Order Form Styles */
+    .order-form {
+        display: grid;
+        gap: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-row.full-width {
+        grid-template-columns: 1fr;
+    }
+
+    /* Order details modal */
+    .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(79, 123, 247, 0.1);
+    }
+
+    .order-detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .order-detail-label {
+        font-weight: 600;
+        color: var(--color-gray);
+    }
+
+    .order-detail-value {
+        color: var(--color-dark);
+        font-weight: 500;
+    }
+
+    /* Map container */
+    .map-container {
+        width: 100%;
+        height: 300px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-top: 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-grid-5 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filters-row {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            width: 100%;
+        }
+
+        .filter-actions button {
+            flex: 1;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

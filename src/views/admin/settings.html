@@ -1,0 +1,239 @@
+<!-- Settings Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-settings-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Configuración del Sistema</h1>
+            <p class="page-description">Ajusta parámetros generales</p>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="settings-alert" class="hidden"></div>
+
+        <!-- System Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3>⏰ Configuración de Reinicio Automático</h3>
+            </div>
+            <div class="card-body">
+                <div class="settings-section">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Hora de Reinicio de Pedidos</h4>
+                            <p>
+                                El módulo de Pedidos se reiniciará automáticamente cada día a la hora
+                                seleccionada para mostrar solo los pedidos del día actual (hora de
+                                Colombia UTC-5).
+                            </p>
+                        </div>
+                        <div class="setting-control">
+                            <label for="reset-hour">Hora de Reinicio:</label>
+                            <select id="reset-hour" name="reset-hour">
+                                <option value="0">12:00 AM</option>
+                                <option value="1" selected>1:00 AM</option>
+                                <option value="2">2:00 AM</option>
+                                <option value="3">3:00 AM</option>
+                                <option value="4">4:00 AM</option>
+                                <option value="5">5:00 AM</option>
+                                <option value="6">6:00 AM</option>
+                                <option value="7">7:00 AM</option>
+                                <option value="8">8:00 AM</option>
+                                <option value="9">9:00 AM</option>
+                                <option value="10">10:00 AM</option>
+                                <option value="11">11:00 AM</option>
+                                <option value="12">12:00 PM</option>
+                                <option value="13">1:00 PM</option>
+                                <option value="14">2:00 PM</option>
+                                <option value="15">3:00 PM</option>
+                                <option value="16">4:00 PM</option>
+                                <option value="17">5:00 PM</option>
+                                <option value="18">6:00 PM</option>
+                                <option value="19">7:00 PM</option>
+                                <option value="20">8:00 PM</option>
+                                <option value="21">9:00 PM</option>
+                                <option value="22">10:00 PM</option>
+                                <option value="23">11:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-actions">
+                        <button class="btn btn-primary" id="btn-save-settings">
+                            💾 Guardar Configuración
+                        </button>
+                        <button class="btn btn-secondary" id="btn-reset-settings">
+                            🔄 Restablecer Valores Predeterminados
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>ℹ️ Información del Sistema</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Versión:</strong>
+                        <span>Fluxi Delivery v2.0</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Zona Horaria:</strong>
+                        <span>Colombia (UTC-5)</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Última Actualización:</strong>
+                        <span id="last-update">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .settings-section {
+        padding: 1.5rem 0;
+    }
+
+    .setting-item {
+        padding: 1.5rem;
+        background: var(--color-bg-secondary);
+        border-radius: var(--radius-md);
+        margin-bottom: 1.5rem;
+    }
+
+    .setting-info h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-dark);
+    }
+
+    .setting-info p {
+        margin: 0;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        line-height: 1.6;
+    }
+
+    .setting-control {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .setting-control label {
+        font-weight: 600;
+        color: var(--color-dark);
+    }
+
+    .setting-control select {
+        padding: 8px 12px;
+        border: 1px solid rgba(79, 123, 247, 0.2);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        min-width: 150px;
+    }
+
+    .setting-actions {
+        display: flex;
+        gap: 1rem;
+        padding-top: 1rem;
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+        .setting-control {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .setting-control select {
+            width: 100%;
+        }
+
+        .setting-actions {
+            flex-direction: column;
+        }
+
+        .setting-actions button {
+            width: 100%;
+        }
+    }
+</style>

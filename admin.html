@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxi - Sistema de Gestión de Domicilios</title>
+
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="src/styles/main.css">
+
+    <style>
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1F2937 0%, #4F7BF7 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.3s ease-out;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        /* App Container */
+        #app {
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Fluxi...</div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app"></div>
+
+    <!-- Configuration Script -->
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
+
+        // Initialize Supabase Client
+        let supabase = null;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            window.supabaseClient = supabase;
+            console.log('%c✅ Supabase conectado exitosamente', 'color: green; font-weight: bold;');
+        } catch (error) {
+            console.error('❌ Error al conectar con Supabase:', error);
+        }
+
+        // App Configuration
+        window.APP_CONFIG = {
+            enableDebug: true,
+            enableAnalytics: false,
+            sessionDuration: 86400000, // 24 hours
+            apiTimeout: 30000
+        };
+
+        // Format utilities
+        window.FormatterUtil = {
+            formatCurrency(amount) {
+                if (!amount && amount !== 0) return '$0';
+                return new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount);
+            },
+
+            formatPhone(phone) {
+                if (!phone) return '';
+                // Format Colombian phone numbers
+                const cleaned = phone.replace(/\D/g, '');
+                if (cleaned.length === 10) {
+                    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
+                }
+                return phone;
+            },
+
+            formatDate(date) {
+                if (!date) return '';
+                return new Date(date).toLocaleDateString('es-CO', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            },
+
+            formatDateTime(date) {
+                if (!date) return '';
+                return new Date(date).toLocaleString('es-CO', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            },
+
+            formatOrderStatus(status) {
+                const statusMap = {
+                    'pendiente': '⏳ Pendiente',
+                    'asignado': '📋 Asignado',
+                    'en-camino': '🚴 En Camino',
+                    'entregado': '✅ Entregado',
+                    'cancelado': '❌ Cancelado'
+                };
+                return statusMap[status] || status;
+            }
+        };
+    </script>
+
+    <!-- Load Core Components -->
+    <script type="module">
+        // Simple Router
+        class Router {
+            constructor() {
+                this.routes = {};
+                this.currentController = null;
+            }
+
+            addRoute(path, handler) {
+                this.routes[path] = handler;
+            }
+
+            async navigate(path) {
+                const handler = this.routes[path];
+                if (handler) {
+                    // Cleanup previous controller
+                    if (this.currentController && typeof this.currentController.destroy === 'function') {
+                        this.currentController.destroy();
+                    }
+
+                    // Load new view
+                    await handler();
+                }
+            }
+
+            start() {
+                // Handle hash changes
+                window.addEventListener('hashchange', () => {
+                    const path = window.location.hash.slice(1) || '/orders';
+                    this.navigate(path);
+                });
+
+                // Initial route
+                const initialPath = window.location.hash.slice(1) || '/orders';
+                this.navigate(initialPath);
+            }
+        }
+
+        // Initialize Router
+        const router = new Router();
+        window.appRouter = router;
+
+        // Helper function to load HTML and Controller
+        async function loadView(htmlPath, controllerPath, ControllerClass) {
+            try {
+                // Load HTML
+                const htmlResponse = await fetch(htmlPath);
+                const html = await htmlResponse.text();
+                document.getElementById('app').innerHTML = html;
+
+                // Load and initialize controller
+                const controllerModule = await import(controllerPath);
+                const Controller = controllerModule[ControllerClass];
+                router.currentController = new Controller();
+
+                // Setup navigation
+                setupNavigation();
+            } catch (error) {
+                console.error(`Error loading view:`, error);
+                document.getElementById('app').innerHTML = `
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Error al cargar la página</h2>
+                        <p>${error.message}</p>
+                        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4F7BF7; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Recargar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Setup navigation event listeners
+        function setupNavigation() {
+            document.querySelectorAll('[data-route]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const route = link.getAttribute('data-route');
+                    window.location.hash = route;
+                });
+            });
+        }
+
+        // Register routes
+        router.addRoute('/users', () => loadView('src/views/admin/users.html', './src/views/admin/UsersController.js', 'UsersController'));
+        router.addRoute('/deliveries', () => loadView('src/views/admin/deliveries.html', './src/views/admin/DeliveriesController.js', 'DeliveriesController'));
+        router.addRoute('/orders', () => loadView('src/views/admin/orders.html', './src/views/admin/OrdersController.js', 'OrdersController'));
+        router.addRoute('/order-history', () => loadView('src/views/admin/order-history.html', './src/views/admin/OrderHistoryController.js', 'OrderHistoryController'));
+        router.addRoute('/reports', () => loadView('src/views/admin/reports.html', './src/views/admin/ReportsController.js', 'ReportsController'));
+        router.addRoute('/cuadre-caja', () => loadView('src/views/admin/cuadre-caja.html', './src/views/admin/CuadreCajaController.js', 'CuadreCajaController'));
+        router.addRoute('/tiempos-espera', () => loadView('src/views/admin/tiempos-espera.html', './src/views/admin/TiemposEsperaController.js', 'TiemposEsperaController'));
+        router.addRoute('/settings', () => loadView('src/views/admin/settings.html', './src/views/admin/SettingsController.js', 'SettingsController'));
+
+        // Check authentication and start app
+        async function initApp() {
+            try {
+                // Check if user is logged in
+                const { data: { session } } = await supabase.auth.getSession();
+
+                if (!session) {
+                    // Redirect to login
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Start router
+                router.start();
+
+                // Hide loading screen
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.add('hidden');
+                }, 500);
+
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('loading-screen').innerHTML = `
+                    <div style="color: white; text-align: center;">
+                        <h2>Error al inicializar la aplicación</h2>
+                        <p>${error.message}</p>
+                        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: white; color: #1F2937; border: none; border-radius: 8px; cursor: pointer;">
+                            Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Start app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>

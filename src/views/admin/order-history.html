@@ -1,0 +1,197 @@
+<!-- Order History Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-history-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">Consulta de Pedidos Históricos</h1>
+            <p class="page-description">Busca y filtra pedidos anteriores</p>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="history-alert" class="hidden"></div>
+
+        <!-- Filters Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Filtros de Búsqueda</h3>
+                <button class="btn btn-secondary btn-sm" id="btn-reset-filters">
+                    🔄 Limpiar Filtros
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="filter-start-date">Fecha Inicio</label>
+                        <input type="date" id="filter-start-date" class="filter-input" />
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-end-date">Fecha Fin</label>
+                        <input type="date" id="filter-end-date" class="filter-input" />
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-status">Estado</label>
+                        <select id="filter-status" class="filter-select">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="asignado">Asignado</option>
+                            <option value="en_camino">En Camino</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-delivery">Domiciliario</label>
+                        <select id="filter-delivery" class="filter-select">
+                            <option value="">Todos los domiciliarios</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-client">Cliente</label>
+                        <input
+                            type="text"
+                            id="filter-client"
+                            class="filter-input"
+                            placeholder="Nombre o teléfono..."
+                        />
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" id="btn-apply-filters">
+                            🔍 Buscar
+                        </button>
+                        <button class="btn btn-success btn-sm" id="btn-export">
+                            📥 Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Resultados</h3>
+                <div class="badge" id="results-count">0 pedidos encontrados</div>
+            </div>
+            <div id="history-table-container"></div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--color-dark);
+        font-size: var(--font-size-sm);
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 8px 12px;
+        border: 1px solid rgba(79, 123, 247, 0.2);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        transition: all 0.2s ease;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .filters-row {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .filter-actions button {
+            width: 100%;
+        }
+    }
+</style>

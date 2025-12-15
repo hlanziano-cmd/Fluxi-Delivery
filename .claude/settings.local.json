@@ -7,7 +7,17 @@
       "Bash(http-server:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(for file in users.html deliveries.html order-history.html reports.html settings.html)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)",
+      "Bash(if ! grep -q \"cuadre-caja\" \"$file\")",
+      "Bash(echo:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

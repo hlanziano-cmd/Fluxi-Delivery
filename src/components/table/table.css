@@ -1,0 +1,239 @@
+/**
+ * Table Component Styles
+ */
+
+/* Table Wrapper */
+.table-wrapper {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* Table Search */
+.table-search {
+    padding: 20px;
+    border-bottom: 1px solid rgba(79, 123, 247, 0.1);
+}
+
+.table-search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border: 1px solid rgba(79, 123, 247, 0.2);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+}
+
+.table-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.1);
+}
+
+/* Table Container */
+.table-container {
+    overflow-x: auto;
+}
+
+/* Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    background: var(--color-primary);
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+}
+
+.data-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.data-table th.sortable:hover {
+    background: rgba(79, 123, 247, 0.9);
+}
+
+.data-table th .sort-icon {
+    margin-left: 6px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(79, 123, 247, 0.1);
+    color: var(--color-dark);
+    font-size: var(--font-size-sm);
+}
+
+.data-table tr:hover {
+    background: rgba(79, 123, 247, 0.03);
+}
+
+.data-table tr.clickable {
+    cursor: pointer;
+}
+
+.data-table tr.clickable:hover {
+    background: rgba(79, 123, 247, 0.05);
+}
+
+/* Empty State */
+.table-empty {
+    text-align: center;
+    padding: 60px 20px !important;
+    color: var(--color-gray);
+    font-style: italic;
+}
+
+/* Table Actions */
+.table-actions {
+    white-space: nowrap;
+}
+
+.table-actions-header {
+    text-align: center;
+}
+
+.table-action-btn {
+    margin: 0 4px;
+}
+
+/* Table Pagination */
+.table-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid rgba(79, 123, 247, 0.1);
+}
+
+.pagination-pages {
+    display: flex;
+    gap: 6px;
+}
+
+.pagination-btn {
+    min-width: 40px;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.status-badge.inactive {
+    background: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+/* Inline Select Dropdowns and Inputs */
+.inline-select {
+    padding: 6px 10px;
+    border: 1px solid rgba(79, 123, 247, 0.2);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-dark);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 90px;
+    max-width: 130px;
+}
+
+.inline-select:hover {
+    border-color: var(--color-primary);
+    background: rgba(79, 123, 247, 0.02);
+}
+
+.inline-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(79, 123, 247, 0.1);
+}
+
+.inline-input {
+    padding: 6px 8px;
+    border: 1px solid rgba(79, 123, 247, 0.2);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-dark);
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.inline-input:hover {
+    border-color: var(--color-primary);
+}
+
+.inline-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(79, 123, 247, 0.1);
+}
+
+.text-muted {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 11px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-search-input {
+        max-width: 100%;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .table-pagination {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .pagination-pages {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .table-action-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .inline-select {
+        min-width: 100px;
+        font-size: 12px;
+    }
+}

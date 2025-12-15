@@ -249,7 +249,7 @@ export class OrdersController {
                     sortable: true,
                     render: (value, row) => {
                         if (row.domiciliario_id && row.consecutivo_domiciliario) {
-                            return row.consecutivo_domiciliario;
+                            return `#${row.consecutivo_domiciliario}`;
                         }
                         return `#${row.consecutivo || row.id}`;
                     },
@@ -275,12 +275,9 @@ export class OrdersController {
                 },
                 {
                     key: 'valor_domicilio',
-                    label: 'Valor Total',
+                    label: 'Valor',
                     sortable: true,
-                    render: (value, row) => {
-                        const total = (parseFloat(row.valor_pedido) || 0) + (parseFloat(row.valor_domicilio) || 0);
-                        return FormatterUtil.formatCurrency(total);
-                    },
+                    render: (value) => FormatterUtil.formatCurrency(value),
                 },
                 {
                     key: 'metodo_pago',
@@ -315,12 +312,11 @@ export class OrdersController {
             ],
             actions: [
                 {
-                    name: 'track',
-                    label: 'Rastrear',
-                    icon: '📍',
-                    variant: 'success',
-                    handler: (id, order) => this.trackDelivery(order),
-                    visible: (order) => order.estado === 'en_camino' && order.domiciliario_id,
+                    name: 'view',
+                    label: 'Ver',
+                    icon: '👁️',
+                    variant: 'info',
+                    handler: (id, order) => this.viewOrderDetails(order),
                 },
                 {
                     name: 'assign',
@@ -328,7 +324,7 @@ export class OrdersController {
                     icon: '📲',
                     variant: 'primary',
                     handler: (id, order) => this.assignOrderWithWhatsApp(order),
-                    visible: (order) => order.domiciliario_id != null && ['pendiente', 'asignado'].includes(order.estado),
+                    visible: (order) => order.domiciliario_id && order.estado === 'pendiente',
                 },
                 {
                     name: 'status',
@@ -339,9 +335,9 @@ export class OrdersController {
                     visible: (order) => ['asignado', 'en_camino'].includes(order.estado),
                 },
                 {
-                    name: 'delete',
-                    label: 'Eliminar',
-                    icon: '🗑️',
+                    name: 'cancel',
+                    label: 'Cancelar',
+                    icon: '❌',
                     variant: 'danger',
                     handler: (id, order) => this.cancelOrder(order),
                     visible: (order) => ['pendiente', 'asignado'].includes(order.estado),
@@ -432,7 +428,7 @@ export class OrdersController {
             <select
                 class="inline-select"
                 data-order-id="${order.id}"
-                onchange="window.ordersController.updatePaymentMethod('${order.id}', this.value)"
+                onchange="window.ordersController.updatePaymentMethod(${order.id}, this.value)"
             >
                 ${options}
             </select>
@@ -463,7 +459,7 @@ export class OrdersController {
             <select
                 class="inline-select"
                 data-order-id="${order.id}"
-                onchange="window.ordersController.updateVoucherStatus('${order.id}', this.value)"
+                onchange="window.ordersController.updateVoucherStatus(${order.id}, this.value)"
             >
                 ${options}
             </select>
@@ -486,7 +482,7 @@ export class OrdersController {
                 placeholder="4 dígitos"
                 maxlength="4"
                 data-order-id="${order.id}"
-                onchange="window.ordersController.updateDatafonoNumber('${order.id}', this.value)"
+                onchange="window.ordersController.updateDatafonoNumber(${order.id}, this.value)"
                 style="width: 80px; text-align: center;"
             />
         `;
@@ -496,17 +492,10 @@ export class OrdersController {
      * Render delivery person select dropdown
      */
     renderDeliverySelect(order) {
-        // Filter: estado = 'disponible' (as shown in deliveries module)
+        // Filter: activo = true AND arranque_inicial > 0
         const availableDeliveries = this.deliveries.filter(
-            (d) => d.estado === 'disponible'
+            (d) => d.activo && d.arranque_inicial && parseFloat(d.arranque_inicial) > 0
         );
-
-        // Debug: Log delivery states
-        if (availableDeliveries.length === 0) {
-            console.warn('[OrdersController] No available deliveries found. States:',
-                this.deliveries.map(d => ({ nombre: d.nombre, estado: d.estado, activo: d.activo }))
-            );
-        }
 
         // If order has assigned delivery, include it even if not currently available
         let selectedDelivery = null;
@@ -535,7 +524,7 @@ export class OrdersController {
             <select
                 class="inline-select"
                 data-order-id="${order.id}"
-                onchange="window.ordersController.updateOrderDelivery('${order.id}', this.value)"
+                onchange="window.ordersController.updateOrderDelivery(${order.id}, this.value)"
             >
                 ${options}
             </select>
@@ -556,9 +545,6 @@ export class OrdersController {
             cancelText: 'Cancelar',
             onConfirm: () => this.handleCreateOrder(modal),
         });
-
-        // Initialize total calculator after modal is rendered
-        setTimeout(() => this.initializeOrderFormCalculator(), 100);
     }
 
     /**
@@ -700,57 +686,59 @@ export class OrdersController {
                     </div>
                 </div>
             </form>
+            <script>
+                // Format currency inputs with Colombian format
+                const valorPedidoInput = document.getElementById('order-valor-pedido');
+                const valorDomicilioInput = document.getElementById('order-valor-domicilio');
+                const totalDisplay = document.getElementById('order-total');
+
+                function formatNumber(value) {
+                    // Remove all non-digit characters
+                    const numStr = value.replace(/[^0-9]/g, '');
+                    if (!numStr) return '';
+
+                    // Format with thousands separator
+                    const num = parseInt(numStr, 10);
+                    return num.toLocaleString('es-CO');
+                }
+
+                function parseFormattedNumber(value) {
+                    if (!value) return 0;
+                    // Remove dots (thousands separator) and parse
+                    return parseFloat(value.replace(/\\./g, '')) || 0;
+                }
+
+                function handleCurrencyInput(e) {
+                    const input = e.target;
+                    const cursorPos = input.selectionStart;
+                    const oldLength = input.value.length;
+
+                    // Format the value
+                    const formatted = formatNumber(input.value);
+                    input.value = formatted;
+
+                    // Adjust cursor position
+                    const newLength = formatted.length;
+                    const diff = newLength - oldLength;
+                    input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+
+                    updateTotal();
+                }
+
+                function updateTotal() {
+                    const valorPedido = parseFormattedNumber(valorPedidoInput.value);
+                    const valorDomicilio = parseFormattedNumber(valorDomicilioInput.value);
+                    const total = valorPedido + valorDomicilio;
+                    totalDisplay.textContent = '$' + total.toLocaleString('es-CO');
+                }
+
+                valorPedidoInput.addEventListener('input', handleCurrencyInput);
+                valorDomicilioInput.addEventListener('input', handleCurrencyInput);
+
+                // Initial calculation
+                updateTotal();
+            </script>
         `;
-    }
-
-    /**
-     * Initialize order form total calculator
-     */
-    initializeOrderFormCalculator() {
-        const valorPedidoInput = document.getElementById('order-valor-pedido');
-        const valorDomicilioInput = document.getElementById('order-valor-domicilio');
-        const totalDisplay = document.getElementById('order-total');
-
-        if (!valorPedidoInput || !valorDomicilioInput || !totalDisplay) {
-            console.error('[OrderForm] Inputs not found', {
-                valorPedidoInput: !!valorPedidoInput,
-                valorDomicilioInput: !!valorDomicilioInput,
-                totalDisplay: !!totalDisplay
-            });
-            return;
-        }
-
-        console.log('[OrderForm] Calculator initialized successfully');
-
-        const updateTotal = () => {
-            // Get raw values and remove non-digits
-            const pedidoStr = valorPedidoInput.value.replace(/[^0-9]/g, '');
-            const domicilioStr = valorDomicilioInput.value.replace(/[^0-9]/g, '');
-
-            const pedido = parseInt(pedidoStr) || 0;
-            const domicilio = parseInt(domicilioStr) || 0;
-            const total = pedido + domicilio;
-
-            console.log('[OrderForm] Calculating:', {pedido, domicilio, total});
-            totalDisplay.textContent = '$' + total.toLocaleString('es-CO');
-        };
-
-        const formatInput = (input) => {
-            const value = input.value.replace(/[^0-9]/g, '');
-            if (value) {
-                const formatted = parseInt(value).toLocaleString('es-CO');
-                input.value = formatted;
-            }
-            updateTotal();
-        };
-
-        valorPedidoInput.addEventListener('input', function() { formatInput(this); });
-        valorDomicilioInput.addEventListener('input', function() { formatInput(this); });
-        valorPedidoInput.addEventListener('blur', function() { formatInput(this); });
-        valorDomicilioInput.addEventListener('blur', function() { formatInput(this); });
-
-        // Initial update
-        updateTotal();
     }
 
     /**
@@ -859,7 +847,7 @@ export class OrdersController {
             <div class="order-details">
                 <div class="order-detail-row">
                     <span class="order-detail-label">ID:</span>
-                    <span class="order-detail-value">${order.consecutivo_domiciliario || '#' + (order.consecutivo || order.id)}</span>
+                    <span class="order-detail-value">#${order.consecutivo || order.id}</span>
                 </div>
                 <div class="order-detail-row">
                     <span class="order-detail-label">Cliente:</span>
@@ -913,7 +901,7 @@ export class OrdersController {
         `;
 
         Modal.open({
-            title: `Detalles del Pedido ${order.consecutivo_domiciliario || '#' + (order.consecutivo || order.id)}`,
+            title: `Detalles del Pedido #${order.consecutivo || order.id}`,
             content: detailsHTML,
             size: 'medium',
             showFooter: false,
@@ -951,7 +939,7 @@ export class OrdersController {
         `;
 
         Modal.open({
-            title: `Asignar Pedido ${order.consecutivo_domiciliario || '#' + (order.consecutivo || order.id)}`,
+            title: `Asignar Pedido #${order.consecutivo || order.id}`,
             content: assignHTML,
             size: 'medium',
             confirmText: 'Asignar',
@@ -1005,22 +993,14 @@ export class OrdersController {
             const phone = delivery.telefono.replace(/^\+/, ''); // Remove + for WhatsApp URL
             const orderIdDisplay = order.consecutivo_domiciliario || order.consecutivo || order.id;
 
-            const total = (parseFloat(order.valor_pedido) || 0) + (parseFloat(order.valor_domicilio) || 0);
-
-            // Get the app URL - use production URL if in production, otherwise localhost
-            const appBaseUrl = window.location.hostname === 'localhost'
-                ? window.location.origin
-                : window.location.origin;
-            const domiciliariosUrl = `${appBaseUrl}/domiciliarios`;
-
             const message = `Hola ${delivery.nombre}! 🚴\n\n` +
                 `Tienes un nuevo pedido asignado:\n\n` +
-                `📦 Pedido ${orderIdDisplay}\n` +
+                `📦 Pedido #${orderIdDisplay}\n` +
                 `👤 Cliente: ${order.cliente}\n` +
                 `📍 Dirección: ${order.direccion}\n` +
-                `💰 Valor Total: ${FormatterUtil.formatCurrency(total)}\n\n` +
+                `💰 Valor: ${FormatterUtil.formatCurrency(order.valor_domicilio)}\n\n` +
                 `Abre la app de domiciliarios para aceptar o rechazar este pedido.\n\n` +
-                `Link de la app: ${domiciliariosUrl}`;
+                `Link de la app: https://fluxi-domiciliarios.vercel.app`;
 
             const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
@@ -1036,61 +1016,6 @@ export class OrdersController {
         } catch (error) {
             console.error('[OrdersController] Error in WhatsApp assignment:', error);
             this.showAlert('danger', 'Error al asignar pedido con WhatsApp');
-        }
-    }
-
-    /**
-     * Track delivery in real-time
-     */
-    async trackDelivery(order) {
-        try {
-            // Find the delivery person
-            const delivery = this.deliveries.find((d) => d.id === order.domiciliario_id);
-
-            if (!delivery) {
-                this.showAlert('danger', 'No se encontró el domiciliario asignado');
-                return;
-            }
-
-            // Check if delivery person has location data
-            if (!delivery.latitud || !delivery.longitud) {
-                this.showAlert(
-                    'warning',
-                    `${delivery.nombre} no está compartiendo su ubicación en este momento. Por favor, pídele que active la ubicación en la app de domiciliarios.`
-                );
-                return;
-            }
-
-            // Check when location was last updated
-            if (delivery.ultima_actualizacion_ubicacion) {
-                const lastUpdate = new Date(delivery.ultima_actualizacion_ubicacion);
-                const minutesAgo = Math.floor((Date.now() - lastUpdate.getTime()) / 60000);
-
-                if (minutesAgo > 5) {
-                    this.showAlert(
-                        'warning',
-                        `Última ubicación actualizada hace ${minutesAgo} minutos. La ubicación puede no ser precisa.`
-                    );
-                }
-            }
-
-            // Open Google Maps with delivery person location
-            const mapsUrl = `https://www.google.com/maps?q=${delivery.latitud},${delivery.longitud}&z=15`;
-            window.open(mapsUrl, '_blank');
-
-            this.showAlert('success', `Rastreando a ${delivery.nombre}`);
-
-            if (APP_CONFIG.enableDebug) {
-                console.info('[OrdersController] Tracking delivery:', {
-                    order: order.id,
-                    delivery: delivery.nombre,
-                    lat: delivery.latitud,
-                    lng: delivery.longitud,
-                });
-            }
-        } catch (error) {
-            console.error('[OrdersController] Error tracking delivery:', error);
-            this.showAlert('danger', 'Error al rastrear domiciliario');
         }
     }
 
@@ -1126,7 +1051,7 @@ export class OrdersController {
         `;
 
         Modal.open({
-            title: `Actualizar Estado - Pedido ${order.consecutivo_domiciliario || '#' + (order.consecutivo || order.id)}`,
+            title: `Actualizar Estado - Pedido #${order.consecutivo || order.id}`,
             content: statusHTML,
             size: 'small',
             confirmText: 'Actualizar',
@@ -1229,15 +1154,14 @@ export class OrdersController {
      */
     async updateOrderDelivery(orderId, deliveryId) {
         try {
-            // Don't parse to int - keep as string (could be UUID or integer)
             const updateData = {
-                domiciliario_id: deliveryId || null,
+                domiciliario_id: deliveryId ? parseInt(deliveryId) : null,
             };
 
-            console.log('[OrdersController] Updating delivery:', {orderId, deliveryId, updateData});
             await this.orderService.updateOrder(orderId, updateData);
             this.showAlert('success', 'Domiciliario actualizado');
             await this.refreshOrders();
+            await this.refreshDeliveries();
 
             if (APP_CONFIG.enableDebug) {
                 console.info('[OrdersController] Delivery updated:', orderId, deliveryId);
@@ -1253,24 +1177,21 @@ export class OrdersController {
      * Cancel order
      */
     cancelOrder(order) {
-        const modal = Modal.confirm(
-            'Eliminar Pedido',
-            `¿Estás seguro de que deseas eliminar el pedido ${order.consecutivo_domiciliario || '#' + (order.consecutivo || order.id)}? Esta acción no se puede deshacer.`,
+        Modal.confirm(
+            'Cancelar Pedido',
+            `¿Estás seguro de que deseas cancelar el pedido #${order.consecutivo || order.id}?`,
             async () => {
                 try {
-                    modal.setLoading(true);
-                    await this.orderService.deleteOrder(order.id);
-                    this.showAlert('success', 'Pedido eliminado exitosamente');
-                    modal.close();
+                    await this.orderService.updateStatus(order.id, 'cancelado');
+                    this.showAlert('success', 'Pedido cancelado exitosamente');
                     await this.refreshOrders();
 
                     if (APP_CONFIG.enableDebug) {
-                        console.info('[OrdersController] Order deleted:', order.id);
+                        console.info('[OrdersController] Order cancelled:', order.id);
                     }
                 } catch (error) {
-                    console.error('[OrdersController] Error deleting order:', error);
-                    this.showAlert('danger', 'Error al eliminar pedido');
-                    modal.setLoading(false);
+                    console.error('[OrdersController] Error cancelling order:', error);
+                    this.showAlert('danger', 'Error al cancelar pedido');
                 }
             }
         );
@@ -1300,7 +1221,7 @@ export class OrdersController {
                 'Fecha',
             ];
             const rows = data.map((order) => [
-                order.consecutivo_domiciliario || order.consecutivo || order.id,
+                order.consecutivo || order.id,
                 order.cliente,
                 order.telefono_cliente,
                 order.direccion,

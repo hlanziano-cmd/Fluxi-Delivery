@@ -1,0 +1,111 @@
+<!-- Reports Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-dashboard-logout">
+                🚪 Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            ☰
+        </button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1 class="page-title">📈 Reportes y Analíticas</h1>
+            <p class="page-description">Análisis detallado de pedidos, ingresos y desempeño</p>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="dashboard-alert" class="hidden"></div>
+
+        <!-- Filtros Section -->
+        <section class="reports-section">
+            <div id="filtersContainer"></div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="reportsLoading" class="loading-container" style="display: none;">
+            <div class="spinner"></div>
+            <p>Cargando reportes...</p>
+        </div>
+
+        <!-- Métricas Section -->
+        <section class="reports-section" id="metricsSection">
+            <h2 class="section-title">
+                <span class="section-icon">📊</span>
+                Métricas Generales
+            </h2>
+            <div id="metricsContainer"></div>
+        </section>
+
+        <!-- Gráficas Section -->
+        <section class="reports-section" id="chartsSection">
+            <h2 class="section-title">
+                <span class="section-icon">📊</span>
+                Gráficas y Distribuciones
+            </h2>
+            <div id="chartsContainer"></div>
+        </section>
+
+        <!-- Tabla de Pedidos Section -->
+        <section class="reports-section" id="ordersTableSection">
+            <h2 class="section-title">
+                <span class="section-icon">📋</span>
+                Detalle de Pedidos
+            </h2>
+            <div id="ordersTableContainer"></div>
+        </section>
+    </main>
+</div>

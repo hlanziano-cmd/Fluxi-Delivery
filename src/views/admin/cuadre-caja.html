@@ -1,0 +1,211 @@
+<!-- Cuadre de Caja Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-cuadre-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h1 class="page-title">💰 Cuadre de Caja</h1>
+                    <p class="page-description">Gestión de efectivo y datáfono por domiciliario</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="cuadre-alert" class="hidden"></div>
+
+        <!-- Panel de Filtros -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔍 Filtros de Consulta</h3>
+            </div>
+            <div class="card-body">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="cuadre-fecha">Fecha de Consulta</label>
+                        <input type="date" id="cuadre-fecha" class="filter-input">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Selecciona la fecha para ver el cuadre
+                        </small>
+                    </div>
+                    <div class="filter-group">
+                        <label for="cuadre-domiciliario">Domiciliario</label>
+                        <select id="cuadre-domiciliario" class="filter-select">
+                            <option value="">Todos los Domiciliarios</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary" id="btn-limpiar-cuadre">🗑️ Limpiar</button>
+                        <button class="btn btn-primary" id="btn-calcular-cuadre">💰 Calcular Cuadre</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de Descarga de Caja -->
+        <div id="descarga-caja-container" class="hidden" style="margin-bottom: 20px;">
+            <button class="btn btn-warning" id="btn-descarga-caja">
+                💸 Registrar Descarga de Caja
+            </button>
+        </div>
+
+        <!-- Resumen General -->
+        <div id="cuadre-summary" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Resumen del Día</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid stats-grid-3">
+                        <div class="stat-card stat-success">
+                            <div class="stat-header">
+                                <div class="stat-label">💵 Total en Efectivo</div>
+                            </div>
+                            <div class="stat-value" id="cuadre-total-efectivo">$0</div>
+                            <div class="stat-change">Arranque + Recaudado</div>
+                        </div>
+
+                        <div class="stat-card stat-info">
+                            <div class="stat-header">
+                                <div class="stat-label">💳 Total en Datáfono</div>
+                            </div>
+                            <div class="stat-value" id="cuadre-total-tarjetas">$0</div>
+                            <div class="stat-change">Pagos con datáfono</div>
+                        </div>
+
+                        <div class="stat-card stat-primary">
+                            <div class="stat-header">
+                                <div class="stat-label">💰 Total General</div>
+                            </div>
+                            <div class="stat-value" id="cuadre-total-general">$0</div>
+                            <div class="stat-change">Efectivo + Datáfono</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Cuadre -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Detalle por Domiciliario</h3>
+            </div>
+            <div id="cuadre-table-container"></div>
+        </div>
+
+        <!-- Mensaje inicial -->
+        <div id="cuadre-initial-message" class="card" style="text-align: center; padding: 60px 40px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">💰</div>
+            <h3 style="color: #666; margin-bottom: 15px;">Cuadre de Caja de Domiciliarios</h3>
+            <p style="color: #999;">Selecciona una fecha y opcionalmente un domiciliario para ver el cuadre de caja.</p>
+            <p style="font-size: 14px; color: #999; margin-top: 10px;">
+                Se mostrará: Valor de arranque + Efectivo recaudado + Datáfono
+            </p>
+        </div>
+    </main>
+</div>
+
+<style>
+    .stats-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--color-dark);
+        font-size: var(--font-size-sm);
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 10px 12px;
+        border: 1px solid rgba(79, 123, 247, 0.2);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        transition: all 0.2s ease;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>

@@ -1,0 +1,163 @@
+/* ========================================
+   ORDER FORM STYLES
+   ======================================== */
+
+.order-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.order-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.order-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.order-form .form-row.full-width {
+    grid-template-columns: 1fr;
+}
+
+/* Labels */
+.order-form label {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: 0.9375rem;
+}
+
+.order-form label.required::after {
+    content: ' *';
+    color: var(--color-danger);
+}
+
+/* Inputs */
+.order-form input[type='text'],
+.order-form input[type='tel'],
+.order-form input[type='number'],
+.order-form select,
+.order-form textarea {
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--border-radius);
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.order-form input:focus,
+.order-form select:focus,
+.order-form textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.order-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Phone input with prefix */
+.phone-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.phone-prefix {
+    position: absolute;
+    left: 1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.phone-input-wrapper input[type='tel'] {
+    padding-left: 3.5rem;
+}
+
+/* Currency prefix */
+.currency-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-prefix {
+    position: absolute;
+    left: 1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.currency-input-wrapper input[type='number'],
+.currency-input-wrapper input[type='text'] {
+    padding-left: 2.5rem;
+}
+
+/* Value summary box */
+.value-summary {
+    background-color: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.value-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.value-summary-row:not(:last-child) {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.value-summary-row.total {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--color-primary);
+    padding-top: 0.75rem;
+}
+
+.value-summary-label {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+}
+
+.value-summary-amount {
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.value-summary-row.total .value-summary-label,
+.value-summary-row.total .value-summary-amount {
+    color: var(--color-primary);
+}
+
+/* Small helper text */
+.order-form small {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}

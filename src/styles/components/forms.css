@@ -1,0 +1,145 @@
+/* Form Styles */
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-dark);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+}
+
+.form-group label.required::after {
+    content: ' *';
+    color: var(--color-danger);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    color: var(--color-dark);
+    background: var(--color-white);
+    transition: all var(--transition-base);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-control:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.form-control.error {
+    border-color: var(--color-danger);
+}
+
+.form-control.error:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-light);
+}
+
+/* Input Sizes */
+
+.form-control-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.form-control-lg {
+    padding: 1rem;
+    font-size: var(--font-size-lg);
+}
+
+/* Textarea */
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Select */
+
+select.form-control {
+    cursor: pointer;
+}
+
+/* Checkbox and Radio */
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.form-check input[type='checkbox'],
+.form-check input[type='radio'] {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-right: var(--spacing-sm);
+    cursor: pointer;
+}
+
+.form-check label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: var(--font-weight-normal);
+}
+
+/* Form Error */
+
+.form-error {
+    display: block;
+    margin-top: var(--spacing-xs);
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+}
+
+/* Form Help Text */
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    color: var(--color-text-light);
+    font-size: var(--font-size-sm);
+}
+
+/* Input Group */
+
+.input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-group-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    pointer-events: none;
+}
+
+.input-group .form-control {
+    padding-left: 2rem;
+}
+
+/* Remove number input spinners globally */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type='number'] {
+    -moz-appearance: textfield;
+}

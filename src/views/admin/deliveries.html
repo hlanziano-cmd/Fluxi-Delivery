@@ -1,0 +1,134 @@
+<!-- Deliveries Management Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-deliveries-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h1 class="page-title">Gestión de Domiciliarios</h1>
+                    <p class="page-description">Administra domiciliarios del sistema</p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-primary" id="btn-create-delivery">➕ Nuevo Domiciliario</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="deliveries-alert" class="hidden"></div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid stats-grid-3">
+            <div class="stat-card stat-info">
+                <div class="stat-header">
+                    <div class="stat-label">Total Domiciliarios</div>
+                    <div class="stat-icon">🏍️</div>
+                </div>
+                <div class="stat-value" id="stat-total-deliveries">--</div>
+                <div class="stat-change">Registrados en el sistema</div>
+            </div>
+
+            <div class="stat-card stat-success">
+                <div class="stat-header">
+                    <div class="stat-label">Activos</div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-value" id="stat-active-deliveries">--</div>
+                <div class="stat-change">Marcados como activos</div>
+            </div>
+
+            <div class="stat-card stat-warning">
+                <div class="stat-header">
+                    <div class="stat-label">Disponibles</div>
+                    <div class="stat-icon">💰</div>
+                </div>
+                <div class="stat-value" id="stat-busy-deliveries">--</div>
+                <div class="stat-change">Con arranque inicial</div>
+            </div>
+        </div>
+
+        <!-- Live Tracking Map -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📍 Seguimiento en Tiempo Real</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh-map">
+                        🔄 Actualizar Mapa
+                    </button>
+                </div>
+            </div>
+            <div id="deliveries-map-container" style="height: 500px; background: #f5f5f5; border-radius: 8px;">
+                <!-- Map will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Deliveries Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Lista de Domiciliarios</h3>
+                <div class="card-header-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-refresh-deliveries">
+                        🔄 Actualizar
+                    </button>
+                </div>
+            </div>
+            <div id="deliveries-table-container"></div>
+        </div>
+    </main>
+</div>

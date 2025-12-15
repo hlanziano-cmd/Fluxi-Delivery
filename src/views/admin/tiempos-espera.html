@@ -1,0 +1,232 @@
+<!-- Tiempos de Espera Page -->
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 Fluxi</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-label">Sesión iniciada</div>
+            <div class="sidebar-user-name" id="sidebar-user-name">Cargando...</div>
+            <div class="sidebar-user-role" id="sidebar-user-role"></div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item" data-route="/users">
+                <span class="nav-item-icon">👥</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/deliveries">
+                <span class="nav-item-icon">🏍️</span>
+                <span>Domiciliarios</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/orders">
+                <span class="nav-item-icon">📦</span>
+                <span>Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/order-history">
+                <span class="nav-item-icon">📋</span>
+                <span>Consulta de Pedidos</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/reports">
+                <span class="nav-item-icon">📈</span>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/cuadre-caja">
+                <span class="nav-item-icon">💰</span>
+                <span>Cuadre de Caja</span>
+            </a>
+            <a href="#" class="nav-item active" data-route="/tiempos-espera">
+                <span class="nav-item-icon">⏱️</span>
+                <span>Tiempos de Espera</span>
+            </a>
+            <a href="#" class="nav-item" data-route="/settings">
+                <span class="nav-item-icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-logout" id="btn-tiempos-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h1 class="page-title">⏱️ Tiempos de Espera y Stand By</h1>
+                    <p class="page-description">Análisis de tiempos de recorrido, espera y entrega</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="tiempos-alert" class="hidden"></div>
+
+        <!-- Filtros -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔍 Filtros de Búsqueda</h3>
+            </div>
+            <div class="card-body">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="filter-tiempos-fecha-inicio">Fecha Inicio</label>
+                        <input type="date" id="filter-tiempos-fecha-inicio" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-tiempos-fecha-fin">Fecha Fin</label>
+                        <input type="date" id="filter-tiempos-fecha-fin" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-tiempos-domiciliario">Domiciliario</label>
+                        <select id="filter-tiempos-domiciliario" class="filter-select">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary" id="btn-limpiar-tiempos">🗑️ Limpiar</button>
+                        <button class="btn btn-primary" id="btn-buscar-tiempos">🔍 Buscar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Resumidas -->
+        <div id="tiempos-stats-container" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Promedios</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid stats-grid-4">
+                        <div class="stat-card stat-info">
+                            <div class="stat-header">
+                                <div class="stat-label">🚴 Tiempo Recorrido</div>
+                            </div>
+                            <div class="stat-value" id="stat-tiempo-recorrido">--</div>
+                            <div class="stat-change">Promedio</div>
+                        </div>
+
+                        <div class="stat-card stat-warning">
+                            <div class="stat-header">
+                                <div class="stat-label">⏰ Tiempo Espera</div>
+                            </div>
+                            <div class="stat-value" id="stat-tiempo-espera">--</div>
+                            <div class="stat-change">Promedio</div>
+                        </div>
+
+                        <div class="stat-card stat-success">
+                            <div class="stat-header">
+                                <div class="stat-label">✅ Tiempo Entrega</div>
+                            </div>
+                            <div class="stat-value" id="stat-tiempo-entrega">--</div>
+                            <div class="stat-change">Promedio</div>
+                        </div>
+
+                        <div class="stat-card stat-primary">
+                            <div class="stat-header">
+                                <div class="stat-label">💤 Stand By</div>
+                            </div>
+                            <div class="stat-value" id="stat-tiempo-standby">--</div>
+                            <div class="stat-change">Promedio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Tiempos -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Detalle de Pedidos</h3>
+            </div>
+            <div id="tiempos-table-container"></div>
+        </div>
+
+        <!-- Resumen -->
+        <div id="tiempos-summary" class="card hidden">
+            <div class="card-header">
+                <h3>📊 Resumen</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <strong>Total de pedidos analizados:</strong>
+                        <div id="summary-total-pedidos" style="font-size: 24px; color: #667eea; font-weight: bold; margin-top: 8px;">0</div>
+                    </div>
+                    <div>
+                        <strong>Pedidos con tiempo de espera:</strong>
+                        <div id="summary-pedidos-con-espera" style="font-size: 24px; color: #f39c12; font-weight: bold; margin-top: 8px;">0</div>
+                    </div>
+                    <div>
+                        <strong>Pedidos sin tiempo de espera:</strong>
+                        <div id="summary-pedidos-sin-espera" style="font-size: 24px; color: #95a5a6; font-weight: bold; margin-top: 8px;">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensaje inicial -->
+        <div id="tiempos-initial-message" class="card" style="text-align: center; padding: 60px 40px;">
+            <div style="font-size: 64px; margin-bottom: 20px;">⏱️</div>
+            <h3 style="color: #666; margin-bottom: 15px;">Análisis de Tiempos de Espera</h3>
+            <p style="color: #999;">Selecciona un rango de fechas y opcionalmente un domiciliario para ver el análisis de tiempos.</p>
+        </div>
+    </main>
+</div>
+
+<style>
+    .stats-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: var(--color-dark);
+        font-size: var(--font-size-sm);
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 10px 12px;
+        border: 1px solid rgba(79, 123, 247, 0.2);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+        transition: all 0.2s ease;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(79, 123, 247, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+</style>
