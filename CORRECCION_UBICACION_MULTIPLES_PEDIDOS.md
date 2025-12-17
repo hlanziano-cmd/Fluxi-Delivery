@@ -72,22 +72,33 @@ console.log('✅ Estado del domiciliario actualizado a disponible:', deliveryDat
 stopTimer();
 
 // ✅ SOLO detener tracking si no hay más pedidos activos
-await loadOrders(); // Recargar primero para obtener estado actualizado
+console.log('📊 Verificando pedidos restantes antes de detener ubicación...');
 
-const remainingActiveOrders = allOrders.filter(o =>
-    o.domiciliario_id === currentDelivery.id &&
-    (o.estado === 'asignado' || o.estado === 'en_camino')
-);
+// Consultar pedidos activos directamente de Supabase
+const { data: remainingActiveOrders, error: checkError } = await window.supabaseClient
+    .from('pedidos')
+    .select('id, estado')
+    .eq('domiciliario_id', currentDelivery.id)
+    .in('estado', ['asignado', 'en_camino']);
 
-console.log('📊 Verificando pedidos restantes:');
-console.log('   - Pedidos activos restantes:', remainingActiveOrders.length);
-
-if (remainingActiveOrders.length === 0) {
-    console.log('📍 No hay más pedidos activos - Deteniendo tracking de ubicación');
-    stopLocationTracking();
+if (checkError) {
+    console.error('⚠️ Error al verificar pedidos restantes:', checkError);
+    // En caso de error, no detenemos la ubicación por seguridad
+    console.log('⚠️ No se pudo verificar pedidos restantes - Manteniendo tracking activo por seguridad');
 } else {
-    console.log('📍 Aún hay', remainingActiveOrders.length, 'pedido(s) activo(s) - Manteniendo tracking activo');
+    const remainingCount = remainingActiveOrders?.length || 0;
+    console.log('   - Pedidos activos restantes:', remainingCount);
+
+    if (remainingCount === 0) {
+        console.log('📍 No hay más pedidos activos - Deteniendo tracking de ubicación');
+        stopLocationTracking();
+    } else {
+        console.log('📍 Aún hay', remainingCount, 'pedido(s) activo(s) - Manteniendo tracking activo');
+    }
 }
+
+// Recargar pedidos para actualizar UI
+await loadOrders();
 
 showAlert('✅ ¡Pedido completado exitosamente! 🎉', 'success');
 console.log('✅ ========== ENTREGA COMPLETADA EXITOSAMENTE ==========');
@@ -95,10 +106,13 @@ console.log('✅ ========== ENTREGA COMPLETADA EXITOSAMENTE ==========');
 
 **Cómo Funciona**:
 
-1. **Recarga los pedidos** para obtener el estado más reciente
-2. **Filtra pedidos activos** del domiciliario actual (estados: `asignado` o `en_camino`)
-3. **Si hay 0 pedidos activos** → Detiene el tracking
-4. **Si hay >= 1 pedidos activos** → Mantiene el tracking activo
+1. **Consulta Supabase directamente** para obtener pedidos activos del domiciliario
+2. **Filtra por estados** `asignado` o `en_camino`
+3. **Cuenta los pedidos restantes**:
+   - **Si hay 0 pedidos activos** → Detiene el tracking
+   - **Si hay >= 1 pedidos activos** → Mantiene el tracking activo
+4. **Manejo de errores**: Si falla la consulta, mantiene el tracking activo por seguridad
+5. **Recarga la UI** con `loadOrders()` para mostrar el estado actualizado
 
 ---
 
@@ -326,15 +340,32 @@ function updateLocation() {
 
 ## 📝 NOTAS TÉCNICAS
 
-### Por Qué Recargar Pedidos Primero
+### Por Qué Consultar Supabase Directamente
 
 ```javascript
-await loadOrders(); // Recargar ANTES de verificar
-
-const remainingActiveOrders = allOrders.filter(...);
+// Consultar pedidos activos directamente de Supabase
+const { data: remainingActiveOrders, error: checkError } = await window.supabaseClient
+    .from('pedidos')
+    .select('id, estado')
+    .eq('domiciliario_id', currentDelivery.id)
+    .in('estado', ['asignado', 'en_camino']);
 ```
 
-**Razón**: Al completar un pedido, el estado en la BD cambia a `'entregado'`. Si verificamos **antes** de recargar, aún veríamos el pedido como activo en la variable local `allOrders`.
+**Razón**:
+- Al completar un pedido, el estado en la BD cambia inmediatamente a `'entregado'`
+- Consultar Supabase garantiza obtener el **estado real y actualizado**
+- No dependemos de variables locales que podrían estar desactualizadas
+- Manejo de errores: Si falla la consulta, no detenemos el tracking por seguridad
+
+### Fix: Variable allOrders no Definida (17 Dic 2025)
+
+**Error anterior**:
+```javascript
+const remainingActiveOrders = allOrders.filter(...)
+// ❌ ReferenceError: Can't find variable: allOrders
+```
+
+**Solución**: Cambiar a consulta directa de Supabase en lugar de usar variable local inexistente.
 
 ### Timeout GPS: 30s → 20s
 

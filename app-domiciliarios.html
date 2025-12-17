@@ -2555,22 +2555,33 @@
                 stopTimer();
 
                 // ✅ SOLO detener tracking si no hay más pedidos activos
-                await loadOrders(); // Recargar primero para obtener estado actualizado
+                console.log('📊 Verificando pedidos restantes antes de detener ubicación...');
 
-                const remainingActiveOrders = allOrders.filter(o =>
-                    o.domiciliario_id === currentDelivery.id &&
-                    (o.estado === 'asignado' || o.estado === 'en_camino')
-                );
+                // Consultar pedidos activos directamente de Supabase
+                const { data: remainingActiveOrders, error: checkError } = await window.supabaseClient
+                    .from('pedidos')
+                    .select('id, estado')
+                    .eq('domiciliario_id', currentDelivery.id)
+                    .in('estado', ['asignado', 'en_camino']);
 
-                console.log('📊 Verificando pedidos restantes:');
-                console.log('   - Pedidos activos restantes:', remainingActiveOrders.length);
-
-                if (remainingActiveOrders.length === 0) {
-                    console.log('📍 No hay más pedidos activos - Deteniendo tracking de ubicación');
-                    stopLocationTracking();
+                if (checkError) {
+                    console.error('⚠️ Error al verificar pedidos restantes:', checkError);
+                    // En caso de error, no detenemos la ubicación por seguridad
+                    console.log('⚠️ No se pudo verificar pedidos restantes - Manteniendo tracking activo por seguridad');
                 } else {
-                    console.log('📍 Aún hay', remainingActiveOrders.length, 'pedido(s) activo(s) - Manteniendo tracking activo');
+                    const remainingCount = remainingActiveOrders?.length || 0;
+                    console.log('   - Pedidos activos restantes:', remainingCount);
+
+                    if (remainingCount === 0) {
+                        console.log('📍 No hay más pedidos activos - Deteniendo tracking de ubicación');
+                        stopLocationTracking();
+                    } else {
+                        console.log('📍 Aún hay', remainingCount, 'pedido(s) activo(s) - Manteniendo tracking activo');
+                    }
                 }
+
+                // Recargar pedidos para actualizar UI
+                await loadOrders();
 
                 showAlert('✅ ¡Pedido completado exitosamente! 🎉', 'success');
                 console.log('✅ ========== ENTREGA COMPLETADA EXITOSAMENTE ==========');
