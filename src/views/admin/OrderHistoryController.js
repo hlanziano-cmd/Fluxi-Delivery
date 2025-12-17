@@ -404,4 +404,17 @@ export class OrderHistoryController {
             }, 3000);
         }
     }
+
+    /**
+     * Cleanup when navigating away
+     */
+    destroy() {
+        if (this.table) {
+            this.table.destroy();
+        }
+
+        if (APP_CONFIG.enableDebug) {
+            console.info('[OrderHistoryController] Destroyed');
+        }
+    }
 }

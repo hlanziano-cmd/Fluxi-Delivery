@@ -1,3 +1,18 @@
+/**
+ * Supabase Configuration (For Vite Build)
+ *
+ * ⚠️ NOTA IMPORTANTE:
+ * Este archivo está diseñado para ser usado con Vite (compilación con bundler).
+ * NO se usa en admin.html que carga Supabase desde UMD bundle.
+ *
+ * Si decides migrar a un build system como Vite en el futuro,
+ * este archivo se usará automáticamente en lugar de la configuración inline.
+ *
+ * Para desarrollo con HTML estático (actual):
+ * - Ver admin.html líneas 83-96 para la configuración activa
+ * - window.supabaseClient es el cliente global que se usa en toda la app
+ */
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -14,4 +29,4 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     },
 });
 
-console.info('[Supabase] Cliente inicializado correctamente');
+console.info('[Supabase] Cliente inicializado correctamente (Vite build)');

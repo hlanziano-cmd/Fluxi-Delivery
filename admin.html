@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fluxi - Sistema de Gestión de Domicilios</title>
 
+    <!-- Suppress browser extension errors -->
+    <script>
+        // Prevent "message channel closed" errors from browser extensions
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+            chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+                // Return false to indicate no async response
+                return false;
+            });
+        }
+    </script>
+
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -200,6 +211,43 @@
         // Initialize Router
         const router = new Router();
         window.appRouter = router;
+
+        // Debug helper - Get current controller safely
+        window.getCurrentController = function() {
+            if (!window.appRouter) {
+                console.warn('⚠️ Router not initialized yet');
+                return null;
+            }
+            if (!window.appRouter.currentController) {
+                console.warn('⚠️ No controller loaded yet. Navigate to a route first.');
+                return null;
+            }
+            console.log('✅ Current Controller:', window.appRouter.currentController.constructor.name);
+            return window.appRouter.currentController;
+        };
+
+        // Debug helper - Inspect controller services
+        window.inspectController = function() {
+            const ctrl = window.getCurrentController();
+            if (!ctrl) return null;
+
+            console.log('📊 Controller Inspection:');
+            console.log('  Name:', ctrl.constructor.name);
+            console.log('  Has authService:', !!ctrl.authService);
+            console.log('  Has orderService:', !!ctrl.orderService);
+            console.log('  Has deliveryService:', !!ctrl.deliveryService);
+            console.log('  Has userService:', !!ctrl.userService);
+            console.log('  Has destroy():', typeof ctrl.destroy === 'function');
+            console.log('  Has supabase (direct access):', !!ctrl.supabase);
+
+            if (ctrl.supabase) {
+                console.warn('⚠️ WARNING: Controller has direct Supabase access! Should use Services instead.');
+            } else {
+                console.log('✅ Controller uses Services (no direct DB access)');
+            }
+
+            return ctrl;
+        };
 
         // Helper function to load HTML and Controller
         async function loadView(htmlPath, controllerPath, ControllerClass) {

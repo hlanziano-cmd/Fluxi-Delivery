@@ -1,4 +1,3 @@
-import { supabase } from '../core/config/supabase.config.js';
 import { APP_CONFIG } from '../core/config/app.config.js';
 
 /**
@@ -7,7 +6,8 @@ import { APP_CONFIG } from '../core/config/app.config.js';
 export class BaseRepository {
     constructor(tableName) {
         this.table = tableName;
-        this.db = supabase;
+        // Use global Supabase client from admin.html
+        this.db = window.supabaseClient;
 
         if (APP_CONFIG.enableDebug) {
             console.info(`[${this.table}Repository] Initialized`);

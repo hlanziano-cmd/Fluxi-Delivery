@@ -1,25 +1,66 @@
+import { AuthService } from '../../services/auth.service.js';
+import { OrderService } from '../../services/order.service.js';
+import { DeliveryService } from '../../services/delivery.service.js';
+import { FormatterUtil } from '../../core/utils/formatter.js';
+import { APP_CONFIG } from '../../core/config/app.config.js';
+
 /**
  * Tiempos de Espera Controller
  * Manages delivery time analysis (travel, wait, and standby times)
  */
 export class TiemposEsperaController {
     constructor() {
-        this.supabase = window.supabaseClient;
+        this.authService = new AuthService();
+        this.orderService = new OrderService();
+        this.deliveryService = new DeliveryService();
         this.deliveries = [];
         this.tiemposData = [];
 
-        this.init();
+        this.initializeView();
     }
 
-    async init() {
+    async initializeView() {
         try {
+            // Check authentication
+            const session = this.authService.getCurrentUser();
+            if (!session) {
+                window.location.href = '/';
+                return;
+            }
+
+            this.displayUserInfo(session);
             await this.loadDeliveries();
             this.setupEventListeners();
             this.setDefaultDates();
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[TiemposEsperaController] Initialized successfully');
+            }
         } catch (error) {
             console.error('[TiemposEsperaController] Init error:', error);
             this.showAlert('danger', 'Error al inicializar el módulo');
         }
+    }
+
+    /**
+     * Display user information in sidebar
+     */
+    displayUserInfo(session) {
+        const nameEl = document.getElementById('sidebar-user-name');
+        const roleEl = document.getElementById('sidebar-user-role');
+
+        if (nameEl) nameEl.textContent = session.nombre;
+        if (roleEl) roleEl.textContent = this.getRoleLabel(session.rol);
+    }
+
+    getRoleLabel(rol) {
+        const roles = {
+            admin: 'Administrador',
+            dispatcher: 'Despachador',
+            domiciliario: 'Domiciliario',
+            superadmin: 'Super Administrador',
+        };
+        return roles[rol] || rol;
     }
 
     setDefaultDates() {
@@ -32,16 +73,14 @@ export class TiemposEsperaController {
 
     async loadDeliveries() {
         try {
-            const { data, error } = await this.supabase
-                .from('domiciliarios')
-                .select('*')
-                .eq('activo', true)
-                .order('nombre');
-
-            if (error) throw error;
-
-            this.deliveries = data || [];
+            // Use DeliveryService instead of direct Supabase access
+            const allDeliveries = await this.deliveryService.getAllDeliveries();
+            this.deliveries = allDeliveries.filter(d => d.activo);
             this.populateDeliverySelect();
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[TiemposEsperaController] Loaded deliveries:', this.deliveries.length);
+            }
         } catch (error) {
             console.error('[TiemposEsperaController] Error loading deliveries:', error);
             throw error;
@@ -61,9 +100,27 @@ export class TiemposEsperaController {
     }
 
     setupEventListeners() {
-        document.getElementById('btn-buscar-tiempos').addEventListener('click', () => this.searchTiempos());
-        document.getElementById('btn-limpiar-tiempos').addEventListener('click', () => this.clearFilters());
-        document.getElementById('btn-tiempos-logout').addEventListener('click', () => this.logout());
+        document.getElementById('btn-buscar-tiempos')?.addEventListener('click', () => this.searchTiempos());
+        document.getElementById('btn-limpiar-tiempos')?.addEventListener('click', () => this.clearFilters());
+        document.getElementById('btn-tiempos-logout')?.addEventListener('click', () => this.handleLogout());
+
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        mobileToggle?.addEventListener('click', () => {
+            sidebar?.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (
+                window.innerWidth <= 768 &&
+                !e.target.closest('.sidebar') &&
+                !e.target.closest('.mobile-menu-toggle')
+            ) {
+                sidebar?.classList.remove('open');
+            }
+        });
     }
 
     async searchTiempos() {
@@ -77,27 +134,49 @@ export class TiemposEsperaController {
                 return;
             }
 
-            // Fetch orders for the selected date range
-            let query = this.supabase
-                .from('pedidos')
-                .select('*, domiciliarios(nombre)')
-                .gte('created_at', `${fechaInicio}T00:00:00`)
-                .lte('created_at', `${fechaFin}T23:59:59`)
-                .eq('estado', 'entregado')
-                .not('tiempo_recorrido', 'is', null)
-                .order('created_at', { ascending: false });
+            // Get all orders using OrderService
+            const allOrders = await this.orderService.getAllOrders();
 
+            // Filter orders by date range, status, and delivery person
+            const startOfDay = new Date(fechaInicio);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(fechaFin);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            let filteredOrders = allOrders.filter(order => {
+                const orderDate = new Date(order.created_at);
+                const hasValidTimeData = order.tiempo_recorrido !== null && order.tiempo_recorrido !== undefined;
+                const isDelivered = order.estado === 'entregado';
+                const isInDateRange = orderDate >= startOfDay && orderDate <= endOfDay;
+
+                return isDelivered && isInDateRange && hasValidTimeData;
+            });
+
+            // Filter by delivery person if specified
             if (domiciliarioId) {
-                query = query.eq('domiciliario_id', parseInt(domiciliarioId));
+                filteredOrders = filteredOrders.filter(order =>
+                    order.domiciliario_id === parseInt(domiciliarioId)
+                );
             }
 
-            const { data: orders, error } = await query;
+            // Sort by creation date descending
+            filteredOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-            if (error) throw error;
+            // Enrich with delivery person names
+            this.tiemposData = filteredOrders.map(order => {
+                const delivery = this.deliveries.find(d => d.id === order.domiciliario_id);
+                return {
+                    ...order,
+                    domiciliario_nombre: delivery ? delivery.nombre : 'N/A'
+                };
+            });
 
-            this.tiemposData = orders || [];
             this.renderTiempos();
             this.showAlert('success', `Se encontraron ${this.tiemposData.length} pedidos`);
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[TiemposEsperaController] Found orders:', this.tiemposData.length);
+            }
 
         } catch (error) {
             console.error('[TiemposEsperaController] Error searching tiempos:', error);
@@ -183,10 +262,10 @@ export class TiemposEsperaController {
                 <tbody>
                     ${this.tiemposData.map(order => `
                         <tr>
-                            <td>${order.consecutivo_domiciliario || '#' + order.id.substring(0, 8)}</td>
-                            <td>${order.direccion}</td>
+                            <td>${order.consecutivo_domiciliario || '#' + (order.id ? order.id.toString().substring(0, 8) : 'N/A')}</td>
+                            <td>${order.direccion || 'N/A'}</td>
                             <td>${order.barrio || '-'}</td>
-                            <td>${order.domiciliarios?.nombre || '-'}</td>
+                            <td>${order.domiciliario_nombre}</td>
                             <td>${this.formatDateTime(order.created_at)}</td>
                             <td>${order.tiempo_recorrido ? this.formatTime(order.tiempo_recorrido) : '-'}</td>
                             <td>${order.tiempo_espera ? this.formatTime(order.tiempo_espera) : '-'}</td>
@@ -235,26 +314,33 @@ export class TiemposEsperaController {
 
     showAlert(type, message) {
         const alertDiv = document.getElementById('tiempos-alert');
+        if (!alertDiv) return;
+
         alertDiv.className = `alert alert-${type}`;
         alertDiv.textContent = message;
         alertDiv.classList.remove('hidden');
 
-        setTimeout(() => {
-            alertDiv.classList.add('hidden');
-        }, 5000);
-    }
-
-    async logout() {
-        try {
-            await this.supabase.auth.signOut();
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error('[TiemposEsperaController] Logout error:', error);
+        if (type === 'success') {
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
         }
     }
 
+    handleLogout() {
+        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+            this.authService.logout();
+            window.location.href = '/';
+        }
+    }
+
+    /**
+     * Cleanup when navigating away
+     */
     destroy() {
-        // Cleanup if needed
-        console.info('[TiemposEsperaController] Destroyed');
+        // Remove event listeners if needed
+        if (APP_CONFIG.enableDebug) {
+            console.info('[TiemposEsperaController] Destroyed');
+        }
     }
 }

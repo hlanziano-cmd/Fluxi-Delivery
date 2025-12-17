@@ -207,4 +207,13 @@ export class SettingsController {
             }, 5000);
         }
     }
+
+    /**
+     * Cleanup when navigating away
+     */
+    destroy() {
+        if (APP_CONFIG.enableDebug) {
+            console.info('[SettingsController] Destroyed');
+        }
+    }
 }

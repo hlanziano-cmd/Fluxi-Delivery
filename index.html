@@ -2392,7 +2392,8 @@
                     domiciliarioSelect.value = order.domiciliario_id || '';
                     domiciliarioSelect.disabled = isFinalized;
                     if (!isFinalized) {
-                        domiciliarioSelect.onchange = () => updateDeliveryDriver(order.id, domiciliarioSelect.value);
+                        // Removed: domiciliarioSelect.onchange - Assignment should only happen on button click
+                        // domiciliarioSelect.onchange = () => updateDeliveryDriver(order.id, domiciliarioSelect.value);
                     }
                 }
                 row.cells[6].appendChild(domiciliarioSelect);
@@ -2770,18 +2771,23 @@
                     // Si es domiciliario propio
                     const driver = allDeliveryDrivers.find(d => d.id === domiciliarioId);
                     if (driver) {
-                        // Obtener el siguiente consecutivo para ESTE domiciliario específico
-                        consecutivo = await getNextConsecutivo(domiciliarioId);
+                        // Obtener el siguiente consecutivo numérico para ESTE domiciliario específico
+                        const consecutivoNumero = await getNextConsecutivo(domiciliarioId);
+
+                        // Generar el consecutivo en formato NOMBRE#NUMERO
+                        consecutivo = `${driver.nombre.toUpperCase()}#${consecutivoNumero}`;
 
                         updateData.domiciliario_id = domiciliarioId;
                         updateData.domiciliario_nombre = driver.nombre;
                         updateData.domiciliario_telefono = driver.telefono;
                         updateData.numero_datafono = datafono || null;
-                        updateData.consecutivo_dia = consecutivo;
+                        updateData.consecutivo_dia = consecutivoNumero;  // Número para consecutivo_dia (integer)
+                        updateData.consecutivo_domiciliario = consecutivo;  // String NOMBRE#NUMERO
 
                         console.log('📝 Datos a actualizar:', {
                             orderId: orderId,
-                            consecutivo: consecutivo,
+                            consecutivo_dia: consecutivoNumero,
+                            consecutivo_domiciliario: consecutivo,
                             domiciliario: driver.nombre
                         });
 
@@ -2816,7 +2822,7 @@
                 }
 
                 const successMsg = consecutivo
-                    ? `Pedido asignado correctamente`
+                    ? `Pedido asignado correctamente - Consecutivo: ${consecutivo}`
                     : 'Pedido asignado correctamente';
                 showAlert('orders-alert', 'success', successMsg);
 

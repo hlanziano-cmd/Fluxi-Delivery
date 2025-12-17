@@ -1,25 +1,66 @@
+import { AuthService } from '../../services/auth.service.js';
+import { OrderService } from '../../services/order.service.js';
+import { DeliveryService } from '../../services/delivery.service.js';
+import { FormatterUtil } from '../../core/utils/formatter.js';
+import { APP_CONFIG } from '../../core/config/app.config.js';
+
 /**
  * Cuadre de Caja Controller
  * Manages cash register reconciliation for delivery personnel
  */
 export class CuadreCajaController {
     constructor() {
-        this.supabase = window.supabaseClient;
+        this.authService = new AuthService();
+        this.orderService = new OrderService();
+        this.deliveryService = new DeliveryService();
         this.deliveries = [];
         this.cuadreData = [];
 
-        this.init();
+        this.initializeView();
     }
 
-    async init() {
+    async initializeView() {
         try {
+            // Check authentication
+            const session = this.authService.getCurrentUser();
+            if (!session) {
+                window.location.href = '/';
+                return;
+            }
+
+            this.displayUserInfo(session);
             await this.loadDeliveries();
             this.setupEventListeners();
             this.setDefaultDate();
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[CuadreCajaController] Initialized successfully');
+            }
         } catch (error) {
             console.error('[CuadreCajaController] Init error:', error);
             this.showAlert('danger', 'Error al inicializar el módulo');
         }
+    }
+
+    /**
+     * Display user information in sidebar
+     */
+    displayUserInfo(session) {
+        const nameEl = document.getElementById('sidebar-user-name');
+        const roleEl = document.getElementById('sidebar-user-role');
+
+        if (nameEl) nameEl.textContent = session.nombre;
+        if (roleEl) roleEl.textContent = this.getRoleLabel(session.rol);
+    }
+
+    getRoleLabel(rol) {
+        const roles = {
+            admin: 'Administrador',
+            dispatcher: 'Despachador',
+            domiciliario: 'Domiciliario',
+            superadmin: 'Super Administrador',
+        };
+        return roles[rol] || rol;
     }
 
     setDefaultDate() {
@@ -29,16 +70,14 @@ export class CuadreCajaController {
 
     async loadDeliveries() {
         try {
-            const { data, error } = await this.supabase
-                .from('domiciliarios')
-                .select('*')
-                .eq('activo', true)
-                .order('nombre');
-
-            if (error) throw error;
-
-            this.deliveries = data || [];
+            // Use DeliveryService instead of direct Supabase access
+            const allDeliveries = await this.deliveryService.getAllDeliveries();
+            this.deliveries = allDeliveries.filter(d => d.activo);
             this.populateDeliverySelect();
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[CuadreCajaController] Loaded deliveries:', this.deliveries.length);
+            }
         } catch (error) {
             console.error('[CuadreCajaController] Error loading deliveries:', error);
             throw error;
@@ -58,9 +97,27 @@ export class CuadreCajaController {
     }
 
     setupEventListeners() {
-        document.getElementById('btn-calcular-cuadre').addEventListener('click', () => this.calculateCuadre());
-        document.getElementById('btn-limpiar-cuadre').addEventListener('click', () => this.clearFilters());
-        document.getElementById('btn-cuadre-logout').addEventListener('click', () => this.logout());
+        document.getElementById('btn-calcular-cuadre')?.addEventListener('click', () => this.calculateCuadre());
+        document.getElementById('btn-limpiar-cuadre')?.addEventListener('click', () => this.clearFilters());
+        document.getElementById('btn-cuadre-logout')?.addEventListener('click', () => this.handleLogout());
+
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        mobileToggle?.addEventListener('click', () => {
+            sidebar?.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (
+                window.innerWidth <= 768 &&
+                !e.target.closest('.sidebar') &&
+                !e.target.closest('.mobile-menu-toggle')
+            ) {
+                sidebar?.classList.remove('open');
+            }
+        });
     }
 
     async calculateCuadre() {
@@ -73,39 +130,39 @@ export class CuadreCajaController {
                 return;
             }
 
-            // Fetch orders for the selected date
-            let query = this.supabase
-                .from('pedidos')
-                .select('*, domiciliarios(nombre)')
-                .gte('created_at', `${fecha}T00:00:00`)
-                .lte('created_at', `${fecha}T23:59:59`)
-                .eq('estado', 'entregado');
+            // Get all orders for the selected date using OrderService
+            const allOrders = await this.orderService.getAllOrders();
 
+            // Filter orders by date and status
+            const startOfDay = new Date(fecha);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(fecha);
+            endOfDay.setHours(23, 59, 59, 999);
+
+            let filteredOrders = allOrders.filter(order => {
+                const orderDate = new Date(order.created_at);
+                return orderDate >= startOfDay &&
+                       orderDate <= endOfDay &&
+                       order.estado === 'entregado';
+            });
+
+            // Filter by delivery person if specified
             if (domiciliarioId) {
-                query = query.eq('domiciliario_id', parseInt(domiciliarioId));
+                filteredOrders = filteredOrders.filter(order =>
+                    order.domiciliario_id === parseInt(domiciliarioId)
+                );
             }
 
-            const { data: orders, error } = await query;
-
-            if (error) throw error;
-
-            // Fetch delivery starting amounts (arranque_inicial)
-            let deliveryQuery = this.supabase
-                .from('domiciliarios')
-                .select('id, nombre, arranque_inicial');
-
+            // Get delivery persons to calculate cuadre
+            let deliveriesToCalculate = this.deliveries;
             if (domiciliarioId) {
-                deliveryQuery = deliveryQuery.eq('id', parseInt(domiciliarioId));
+                deliveriesToCalculate = this.deliveries.filter(d => d.id === parseInt(domiciliarioId));
             }
-
-            const { data: deliveriesData, error: deliveryError } = await deliveryQuery;
-
-            if (deliveryError) throw deliveryError;
 
             // Calculate cuadre by delivery person
             const cuadreByDelivery = {};
 
-            deliveriesData.forEach(delivery => {
+            deliveriesToCalculate.forEach(delivery => {
                 cuadreByDelivery[delivery.id] = {
                     nombre: delivery.nombre,
                     arranque: parseFloat(delivery.arranque_inicial) || 0,
@@ -115,7 +172,7 @@ export class CuadreCajaController {
                 };
             });
 
-            orders.forEach(order => {
+            filteredOrders.forEach(order => {
                 if (order.domiciliario_id && cuadreByDelivery[order.domiciliario_id]) {
                     const metodo = order.metodo_pago || 'efectivo';
                     const valor = parseFloat(order.valor_domicilio) || 0;
@@ -128,11 +185,13 @@ export class CuadreCajaController {
                 }
             });
 
-            // TODO: Fetch descargas de caja from database if you have that table
-
             this.cuadreData = Object.values(cuadreByDelivery);
             this.renderCuadre();
             this.showAlert('success', 'Cuadre calculado correctamente');
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[CuadreCajaController] Cuadre calculated:', this.cuadreData.length, 'delivery persons');
+            }
 
         } catch (error) {
             console.error('[CuadreCajaController] Error calculating cuadre:', error);
@@ -223,26 +282,33 @@ export class CuadreCajaController {
 
     showAlert(type, message) {
         const alertDiv = document.getElementById('cuadre-alert');
+        if (!alertDiv) return;
+
         alertDiv.className = `alert alert-${type}`;
         alertDiv.textContent = message;
         alertDiv.classList.remove('hidden');
 
-        setTimeout(() => {
-            alertDiv.classList.add('hidden');
-        }, 5000);
-    }
-
-    async logout() {
-        try {
-            await this.supabase.auth.signOut();
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error('[CuadreCajaController] Logout error:', error);
+        if (type === 'success') {
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
         }
     }
 
+    handleLogout() {
+        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+            this.authService.logout();
+            window.location.href = '/';
+        }
+    }
+
+    /**
+     * Cleanup when navigating away
+     */
     destroy() {
-        // Cleanup if needed
-        console.info('[CuadreCajaController] Destroyed');
+        // Remove event listeners if needed
+        if (APP_CONFIG.enableDebug) {
+            console.info('[CuadreCajaController] Destroyed');
+        }
     }
 }

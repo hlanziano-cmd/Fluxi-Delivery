@@ -17,7 +17,10 @@
       "Bash(if ! grep -q \"cuadre-caja\" \"$file\")",
       "Bash(echo:*)",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(node -c:*)",
+      "Bash(for file in src/views/admin/*Controller.js)",
+      "Bash(do if ! grep -q \"destroy()\" \"$file\")"
     ],
     "deny": [],
     "ask": []

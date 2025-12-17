@@ -769,13 +769,23 @@
         </div>
     </div>
 
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
+    <!-- Load Supabase UMD (more reliable than ESM for global client) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
         const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
 
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Create Supabase client using UMD
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Expose globally for repositories
+        window.supabaseClient = supabaseClient;
+
+        console.log('✅ Supabase Client initialized:', window.supabaseClient ? 'OK' : 'FAILED');
+    </script>
+
+    <script type="module">
 
         // 🔖 SISTEMA DE VERSIONES Y CONTROL DE CACHÉ
         const APP_VERSION = '2.2.0'; // ACTUALIZADO: 24-Oct-2024 - Fix tracking + Background support
@@ -1056,10 +1066,10 @@
 
         function setupRealtimeSubscription() {
             if (realtimeChannel) {
-                supabase.removeChannel(realtimeChannel);
+                window.supabaseClient.removeChannel(realtimeChannel);
             }
 
-            realtimeChannel = supabase
+            realtimeChannel = window.supabaseClient
                 .channel('pedidos-changes')
                 .on(
                     'postgres_changes',
@@ -1138,8 +1148,11 @@
 
                 navigator.geolocation.getCurrentPosition(
                     () => resolve(true),
-                    (error) => reject(error),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    (error) => {
+                        console.warn('⚠️ Error al solicitar permiso de ubicación:', error);
+                        reject(error);
+                    },
+                    { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
                 );
             });
         }
@@ -1150,16 +1163,142 @@
                     reject(new Error('Geolocalización no disponible'));
                     return;
                 }
-                
+
                 if (!currentDelivery) {
                     reject(new Error('No hay domiciliario activo'));
                     return;
                 }
 
-                console.log('🔄 Solicitando ubicación GPS...');
+                console.log('🔄 Solicitando ubicación GPS (alta precisión)...');
 
+                // Helper function to attempt location with specific options
+                const attemptGeolocation = (options, onSuccess, onError) => {
+                    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+                };
+
+                // Success handler
+                const handleSuccess = async (position) => {
+                    try {
+                        const locationData = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            timestamp: new Date().toISOString(),
+                            accuracy: position.coords.accuracy,
+                            speed: position.coords.speed,
+                            heading: position.coords.heading
+                        };
+
+                        console.log('📍 Ubicación GPS obtenida:', {
+                            lat: locationData.lat.toFixed(6),
+                            lng: locationData.lng.toFixed(6),
+                            accuracy: Math.round(locationData.accuracy) + 'm',
+                            timestamp: locationData.timestamp
+                        });
+
+                        console.log('💾 Guardando en base de datos...');
+                        const { data: updateResult, error: updateError } = await window.supabaseClient
+                            .from('domiciliarios')
+                            .update({
+                                ubicacion: locationData,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', currentDelivery.id)
+                            .select();
+
+                        if (updateError) {
+                            console.error('❌ Error al guardar ubicación:', updateError);
+                            throw updateError;
+                        }
+
+                        console.log('✅ Ubicación guardada exitosamente en BD');
+
+                        // Incrementar contador de actualizaciones
+                        locationUpdateCount++;
+
+                        document.getElementById('location-indicator').classList.add('active');
+                        document.getElementById('location-indicator').classList.remove('inactive');
+
+                        const timeStr = new Date().toLocaleTimeString('es-CO', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+
+                        document.getElementById('location-status').textContent =
+                            `Ubicación activa - Actualizado: ${timeStr} (${locationUpdateCount} actualizaciones)`;
+
+                        // Actualizar UI del control de ubicación
+                        updateLocationUI(true);
+
+                        console.log(`📍 [${locationUpdateCount}] Ubicación actualizada completamente:`, {
+                            lat: locationData.lat.toFixed(6),
+                            lng: locationData.lng.toFixed(6),
+                            accuracy: Math.round(locationData.accuracy) + 'm',
+                            time: timeStr
+                        });
+
+                        resolve(locationData);
+                    } catch (error) {
+                        console.error('❌ Error actualizando ubicación:', error);
+                        reject(error);
+                    }
+                };
+
+                // Try high accuracy first
                 navigator.geolocation.getCurrentPosition(
-                    async (position) => {
+                    handleSuccess,
+                    (error) => {
+                        if (error.code === error.TIMEOUT) {
+                            console.warn('⚠️ Timeout con alta precisión. Intentando con precisión normal (WiFi/Celular)...');
+
+                            // Fallback: Try with lower accuracy (faster)
+                            navigator.geolocation.getCurrentPosition(
+                                handleSuccess,
+                                (fallbackError) => {
+                                    console.error('❌ Error de geolocalización (fallback):', fallbackError);
+                                    let errorMessage = 'Error al obtener ubicación. ';
+                                    switch(fallbackError.code) {
+                                        case fallbackError.PERMISSION_DENIED:
+                                            errorMessage += 'Permisos de ubicación denegados.';
+                                            break;
+                                        case fallbackError.POSITION_UNAVAILABLE:
+                                            errorMessage += 'Ubicación no disponible.';
+                                            break;
+                                        case fallbackError.TIMEOUT:
+                                            errorMessage += 'Tiempo de espera agotado incluso con WiFi/Celular.';
+                                            break;
+                                        default:
+                                            errorMessage += fallbackError.message;
+                                    }
+                                    reject(new Error(errorMessage));
+                                },
+                                { enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 }
+                            );
+                        } else {
+                            // Si no es timeout, rechazar inmediatamente
+                            console.error('❌ Error de geolocalización:', error);
+                            let errorMessage = 'Error al obtener ubicación. ';
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    errorMessage += 'Permisos de ubicación denegados.';
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    errorMessage += 'Ubicación no disponible.';
+                                    break;
+                                default:
+                                    errorMessage += error.message;
+                            }
+                            reject(new Error(errorMessage));
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }
+                );
+            });
+        }
+
+        // Eliminar código duplicado que sigue
+        /* CÓDIGO ANTIGUO DUPLICADO - ELIMINADO
+        async (position) => {
                         try {
                             const locationData = {
                                 lat: position.coords.latitude,
@@ -1178,7 +1317,7 @@
                             });
 
                             console.log('💾 Guardando en base de datos...');
-                            const { data: updateResult, error: updateError } = await supabase
+                            const { data: updateResult, error: updateError } = await window.supabaseClient
                                 .from('domiciliarios')
                                 .update({ 
                                     ubicacion: locationData,
@@ -1195,7 +1334,7 @@
                             console.log('✅ Ubicación guardada exitosamente en BD:', updateResult);
 
                             // Verificar que se guardó correctamente
-                            const { data: verifyData, error: verifyError } = await supabase
+                            const { data: verifyData, error: verifyError } = await window.supabaseClient
                                 .from('domiciliarios')
                                 .select('ubicacion')
                                 .eq('id', currentDelivery.id)
@@ -1253,14 +1392,14 @@
                                 errorMessage += 'Ubicación no disponible.';
                                 break;
                             case error.TIMEOUT:
-                                errorMessage += 'Tiempo de espera agotado.';
+                                errorMessage += 'Tiempo de espera agotado. Intenta de nuevo.';
                                 break;
                             default:
                                 errorMessage += error.message;
                         }
                         reject(new Error(errorMessage));
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 }
                 );
             });
         }
@@ -1396,7 +1535,7 @@
                                 accuracy: Math.round(locationData.accuracy) + 'm'
                             });
 
-                            const { data, error } = await supabase
+                            const { data, error } = await window.supabaseClient
                                 .from('domiciliarios')
                                 .update({ 
                                     ubicacion: locationData,
@@ -1623,7 +1762,7 @@
                 console.log('Intentando login con teléfono:', cleanPhone);
                 
                 // Buscar domiciliario
-                const { data, error } = await supabase
+                const { data, error } = await window.supabaseClient
                     .from('domiciliarios')
                     .select('*')
                     .eq('telefono', cleanPhone)
@@ -1678,7 +1817,7 @@
                 console.log('🔄 Cargando pedidos para domiciliario:', currentDelivery.id);
 
                 // Obtener TODOS los pedidos asignados, ordenados por tiempo de aceptación (el primero aceptado primero)
-                const { data: activeOrders, error } = await supabase
+                const { data: activeOrders, error } = await window.supabaseClient
                     .from('pedidos')
                     .select('*')
                     .eq('domiciliario_id', currentDelivery.id)
@@ -1722,7 +1861,7 @@
                     document.getElementById('active-order-container').classList.add('hidden');
                     stopTimer();
 
-                    await supabase
+                    await window.supabaseClient
                         .from('domiciliarios')
                         .update({ estado: 'disponible' })
                         .eq('id', currentDelivery.id);
@@ -1730,7 +1869,7 @@
 
                 // ✅ Filtrar pedidos según el tipo de domiciliario
                 // Solo mostrar pedidos del tipo correspondiente (propio/rappi)
-                const { data: availableOrders } = await supabase
+                const { data: availableOrders } = await window.supabaseClient
                     .from('pedidos')
                     .select('*')
                     .eq('estado', 'pendiente')
@@ -1936,7 +2075,7 @@
             console.log('📊 Calculando estadísticas desde:', fechaInicio.toLocaleString('es-CO'));
 
             // Obtener solo pedidos desde las 8 AM del día laboral actual
-            const { data: allOrders } = await supabase
+            const { data: allOrders } = await window.supabaseClient
                 .from('pedidos')
                 .select('*')
                 .eq('domiciliario_id', currentDelivery.id)
@@ -1985,7 +2124,7 @@
                 });
 
                 // Obtener valor de arranque del día laboral actual
-                const { data: config } = await supabase
+                const { data: config } = await window.supabaseClient
                     .from('configuracion_diaria')
                     .select('valor_arranque')
                     .eq('fecha', fechaConfiguracion)
@@ -1996,7 +2135,7 @@
 
                 // Obtener pedidos desde las 8 AM del día laboral actual
                 // Incluir: asignado, en_camino, entregado (igual que Index)
-                const { data: pedidosEntregados } = await supabase
+                const { data: pedidosEntregados } = await window.supabaseClient
                     .from('pedidos')
                     .select('*')
                     .eq('domiciliario_id', currentDelivery.id)
@@ -2141,7 +2280,7 @@
                 console.log('🔍 Iniciando proceso de aceptación de pedido:', orderId);
                 
                 // Verificar que efectivamente tenemos una ubicación guardada y reciente
-                const { data: deliveryData } = await supabase
+                const { data: deliveryData } = await window.supabaseClient
                     .from('domiciliarios')
                     .select('ubicacion')
                     .eq('id', currentDelivery.id)
@@ -2184,7 +2323,7 @@
                 
                 console.log('📝 Actualizando pedido con datos:', updateData);
                 
-                const { data: updatedOrder, error } = await supabase
+                const { data: updatedOrder, error } = await window.supabaseClient
                     .from('pedidos')
                     .update(updateData)
                     .eq('id', orderId)
@@ -2199,7 +2338,7 @@
                 console.log('✅ Pedido actualizado exitosamente:', updatedOrder);
 
                 // Actualizar estado del domiciliario
-                const { error: deliveryError } = await supabase
+                const { error: deliveryError } = await window.supabaseClient
                     .from('domiciliarios')
                     .update({ estado: 'ocupado' })
                     .eq('id', currentDelivery.id);
@@ -2255,7 +2394,7 @@
                 console.log('   - Tiempo de inicio:', new Date(startTime).toLocaleTimeString());
 
                 // Obtener TODOS los pedidos asignados al domiciliario
-                const { data: pedidosAsignados, error: fetchError } = await supabase
+                const { data: pedidosAsignados, error: fetchError } = await window.supabaseClient
                     .from('pedidos')
                     .select('*')
                     .eq('domiciliario_id', currentDelivery.id)
@@ -2275,7 +2414,7 @@
                 // Actualizar TODOS los pedidos asignados a "en_camino" con el mismo tiempo de inicio
                 const pedidosIds = pedidosAsignados.map(p => p.id);
 
-                const { data: updatedOrders, error: updateError } = await supabase
+                const { data: updatedOrders, error: updateError } = await window.supabaseClient
                     .from('pedidos')
                     .update({
                         estado: 'en_camino',
@@ -2341,7 +2480,7 @@
                 
                 console.log('   - Datos a actualizar:', updateData);
                 
-                const { data: updatedOrder, error } = await supabase
+                const { data: updatedOrder, error } = await window.supabaseClient
                     .from('pedidos')
                     .update(updateData)
                     .eq('id', orderId)
@@ -2411,7 +2550,7 @@
                 }
 
                 console.log('   - Actualizando en Supabase...');
-                const { data: updatedOrder, error } = await supabase
+                const { data: updatedOrder, error } = await window.supabaseClient
                     .from('pedidos')
                     .update({
                         tiempo_llegada: arrivalTime,
@@ -2483,7 +2622,7 @@
                 const deliveryTime = Date.now();
                 console.log('   - Tiempo de entrega:', new Date(deliveryTime).toLocaleTimeString());
                 
-                const { data: updatedOrder, error } = await supabase
+                const { data: updatedOrder, error } = await window.supabaseClient
                     .from('pedidos')
                     .update({
                         estado: 'entregado',
@@ -2505,7 +2644,7 @@
                 console.log('📝 Actualizando estado del domiciliario a disponible...');
                 console.log('   - Domiciliario ID:', currentDelivery.id);
 
-                const { data: deliveryData, error: deliveryError } = await supabase
+                const { data: deliveryData, error: deliveryError } = await window.supabaseClient
                     .from('domiciliarios')
                     .update({
                         estado: 'disponible',
@@ -2522,12 +2661,26 @@
                 console.log('✅ Estado del domiciliario actualizado a disponible:', deliveryData);
 
                 stopTimer();
-                stopLocationTracking();
-                
+
+                // ✅ SOLO detener tracking si no hay más pedidos activos
+                await loadOrders(); // Recargar primero para obtener estado actualizado
+
+                const remainingActiveOrders = allOrders.filter(o =>
+                    o.domiciliario_id === currentDelivery.id &&
+                    (o.estado === 'asignado' || o.estado === 'en_camino')
+                );
+
+                console.log('📊 Verificando pedidos restantes:');
+                console.log('   - Pedidos activos restantes:', remainingActiveOrders.length);
+
+                if (remainingActiveOrders.length === 0) {
+                    console.log('📍 No hay más pedidos activos - Deteniendo tracking de ubicación');
+                    stopLocationTracking();
+                } else {
+                    console.log('📍 Aún hay', remainingActiveOrders.length, 'pedido(s) activo(s) - Manteniendo tracking activo');
+                }
+
                 showAlert('✅ ¡Pedido completado exitosamente! 🎉', 'success');
-                
-                console.log('🔄 Recargando pedidos...');
-                await loadOrders();
                 console.log('✅ ========== ENTREGA COMPLETADA EXITOSAMENTE ==========');
                 
             } catch (error) {
@@ -2552,7 +2705,7 @@
 
             try {
                 // Actualizar el pedido a estado cancelado
-                const { data: updatedOrder, error } = await supabase
+                const { data: updatedOrder, error } = await window.supabaseClient
                     .from('pedidos')
                     .update({
                         estado: 'cancelado',
@@ -2573,7 +2726,7 @@
                 console.log('📝 Actualizando estado del domiciliario a disponible...');
                 console.log('   - Domiciliario ID:', currentDelivery.id);
 
-                const { data: deliveryData, error: deliveryError } = await supabase
+                const { data: deliveryData, error: deliveryError } = await window.supabaseClient
                     .from('domiciliarios')
                     .update({
                         estado: 'disponible',
@@ -2627,7 +2780,7 @@
                 stopLocationTracking();
                 stopTimer();
                 if (realtimeChannel) {
-                    supabase.removeChannel(realtimeChannel);
+                    window.supabaseClient.removeChannel(realtimeChannel);
                 }
                 location.reload();
             }

@@ -227,10 +227,44 @@ export class OrderRepository extends BaseRepository {
      * @returns {Promise<Object>}
      */
     async assignToDelivery(orderId, deliveryId) {
-        return this.update(orderId, {
-            domiciliario_id: deliveryId,
-            estado: 'asignado',
-        });
+        try {
+            // 1. Get delivery person name
+            const { data: delivery, error: deliveryError } = await this.db
+                .from('domiciliarios')
+                .select('nombre')
+                .eq('id', deliveryId)
+                .single();
+
+            if (deliveryError) throw deliveryError;
+            if (!delivery) throw new Error('Domiciliario no encontrado');
+
+            // 2. Count today's orders for this delivery person
+            const today = new Date().toISOString().split('T')[0];
+            const { data: todayOrders, error: countError } = await this.db
+                .from(this.table)
+                .select('id')
+                .eq('domiciliario_id', deliveryId)
+                .gte('created_at', `${today}T00:00:00`)
+                .lte('created_at', `${today}T23:59:59`);
+
+            if (countError) throw countError;
+
+            // 3. Calculate next number for today
+            const orderNumber = (todayOrders?.length || 0) + 1;
+
+            // 4. Generate consecutivo: NOMBRE#NUMERO
+            const consecutivo = `${delivery.nombre.toUpperCase()}#${orderNumber}`;
+
+            // 5. Update order with assignment and consecutivo
+            return this.update(orderId, {
+                domiciliario_id: deliveryId,
+                estado: 'asignado',
+                consecutivo_domiciliario: consecutivo,
+            });
+        } catch (error) {
+            console.error(`[${this.table}Repository] assignToDelivery failed:`, error);
+            throw error;
+        }
     }
 
     /**
