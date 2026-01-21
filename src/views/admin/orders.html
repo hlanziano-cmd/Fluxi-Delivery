@@ -62,9 +62,13 @@
             <div class="page-header-content">
                 <div>
                     <h1 class="page-title">Gestión de Pedidos</h1>
-                    <p class="page-description">Administra y monitorea pedidos</p>
+                    <p class="page-description">Administra y monitorea pedidos del día</p>
                 </div>
                 <div class="page-header-actions">
+                    <div class="orders-counter" id="orders-counter">
+                        <span class="counter-label">Total Pedidos Hoy:</span>
+                        <span class="counter-value" id="total-orders-count">0</span>
+                    </div>
                     <button class="btn btn-primary" id="btn-create-order">➕ Nuevo Pedido</button>
                 </div>
             </div>
@@ -287,6 +291,31 @@
         margin-top: 16px;
     }
 
+    /* Orders Counter */
+    .orders-counter {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #4f7bf7 0%, #3a5fd9 100%);
+        padding: 12px 20px;
+        border-radius: var(--radius-lg);
+        color: white;
+        margin-right: 12px;
+    }
+
+    .counter-label {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
+    .counter-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        min-width: 40px;
+        text-align: center;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .stats-grid-5 {
@@ -307,6 +336,16 @@
 
         .form-row {
             grid-template-columns: 1fr;
+        }
+
+        .page-header-actions {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .orders-counter {
+            margin-right: 0;
+            justify-content: center;
         }
     }
 </style>

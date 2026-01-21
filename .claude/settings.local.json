@@ -20,7 +20,19 @@
       "Bash(done)",
       "Bash(node -c:*)",
       "Bash(for file in src/views/admin/*Controller.js)",
-      "Bash(do if ! grep -q \"destroy()\" \"$file\")"
+      "Bash(do if ! grep -q \"destroy()\" \"$file\")",
+      "Bash(start python -m http.server 8080)",
+      "Bash(timeout 2 curl:*)",
+      "Bash(node:*)",
+      "Bash(start node server/dyalogo-proxy.js:*)",
+      "Bash(timeout 3 curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist:*)",
+      "Bash(start /min python -m http.server 8080)",
+      "Bash(start /min node dyalogo-proxy.js)",
+      "Bash(timeout /t 3)",
+      "Bash(ping:*)"
     ],
     "deny": [],
     "ask": []

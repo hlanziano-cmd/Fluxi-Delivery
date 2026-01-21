@@ -603,6 +603,17 @@
                                         border-radius: 8px;
                                         backdrop-filter: blur(10px);">
                                 <div style="color: rgba(255, 255, 255, 0.9); font-size: 11px; margin-bottom: 2px;">
+                                    Total Pedidos
+                                </div>
+                                <div id="orders-total-count" style="color: white; font-size: 20px; font-weight: 700;">
+                                    0
+                                </div>
+                            </div>
+                            <div style="background: rgba(255, 255, 255, 0.2);
+                                        padding: 8px 15px;
+                                        border-radius: 8px;
+                                        backdrop-filter: blur(10px);">
+                                <div style="color: rgba(255, 255, 255, 0.9); font-size: 11px; margin-bottom: 2px;">
                                     Reinicio a las
                                 </div>
                                 <div id="orders-reset-time-display" style="color: white; font-size: 15px; font-weight: 700;">
@@ -628,7 +639,7 @@
                     <table style="font-size: 13px;">
                         <thead>
                             <tr>
-                                <th style="width: 60px; text-align: center; font-size: 12px;">ID</th>
+                                <th style="width: 70px; text-align: center; font-size: 12px;">Fecha</th>
                                 <th style="width: 110px; text-align: center; font-size: 12px;">Cliente</th>
                                 <th style="width: 140px; text-align: center; font-size: 12px;">Dirección</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Barrio</th>
@@ -666,8 +677,8 @@
                     <h4 style="margin-bottom: 15px;">Criterios de Búsqueda</h4>
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px;">
                         <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">ID</label>
-                            <input type="text" id="search-id" placeholder="Ej: abc123..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Teléfono</label>
+                            <input type="text" id="search-id" placeholder="Ej: 3001234567" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Cliente</label>
@@ -742,7 +753,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
                         <button class="btn btn-primary" id="btn-search-orders">🔍 Buscar</button>
                         <button class="btn btn-secondary" id="btn-clear-search">🗑️ Limpiar</button>
                     </div>
@@ -753,7 +764,7 @@
                     <table style="font-size: 13px;">
                         <thead>
                             <tr>
-                                <th style="width: 60px; text-align: center; font-size: 12px;">ID</th>
+                                <th style="width: 100px; text-align: center; font-size: 12px;">Fecha</th>
                                 <th style="width: 110px; text-align: center; font-size: 12px;">Cliente</th>
                                 <th style="width: 140px; text-align: center; font-size: 12px;">Dirección</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Barrio</th>
@@ -1160,6 +1171,41 @@
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px;">🔄 Sincronización con Dyalogo</h4>
+                    <div id="dyalogo-config-alert"></div>
+
+                    <!-- Panel de estado -->
+                    <div class="alert alert-success" style="margin-bottom: 15px;">
+                        <strong>📡 Webhook Dyalogo Activo</strong><br>
+                        Los pedidos se importan automáticamente desde Dyalogo cada minuto.
+                    </div>
+
+                    <!-- Grid de estadísticas -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.9;">Estado</div>
+                            <div id="dyalogo-sync-status" style="font-size: 18px; font-weight: bold; margin-top: 5px;">🔄 Activo</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.9;">Importados Hoy</div>
+                            <div id="dyalogo-imported-today" style="font-size: 24px; font-weight: bold; margin-top: 5px;">0</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; opacity: 0.9;">Última Sync</div>
+                            <div id="dyalogo-last-sync" style="font-size: 14px; font-weight: bold; margin-top: 5px;">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Log de actividad (colapsable) -->
+                    <details style="margin-top: 15px;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #667eea; padding: 10px 0;">📝 Ver Registro de Actividad</summary>
+                        <div id="dyalogo-sync-log" style="background: #1e1e1e; color: #d4d4d4; border-radius: 8px; padding: 15px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; margin-top: 10px;">
+                            <div style="color: #17a2b8;">[Inicio] Sistema de sincronización listo</div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
                     <h4 style="margin-bottom: 15px;">📋 Instrucciones</h4>
                     <ol style="line-height: 2;">
                         <li>Crea domiciliarios en el módulo correspondiente</li>
@@ -1455,6 +1501,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <!-- Dyalogo Webhook Scripts -->
+    <script src="config/dyalogo-webhook.config.js"></script>
+    <script src="services/dyalogo-webhook.service.js"></script>
     <script>
         const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
@@ -2216,6 +2265,12 @@
 
                 renderOrders(allOrders);
 
+                // Actualizar contador de pedidos totales
+                const totalCountEl = document.getElementById('orders-total-count');
+                if (totalCountEl) {
+                    totalCountEl.textContent = allOrders.length;
+                }
+
                 // Configurar auto-reload para el próximo reinicio
                 setupAutoReload();
             } catch (error) {
@@ -2331,18 +2386,25 @@
                 const isFinalized = order.estado === 'entregado' || order.estado === 'cancelado';
 
                 const row = tbody.insertRow();
-                // Mostrar consecutivo si existe y tiene domiciliario asignado
-                let orderDisplay;
-                if (order.consecutivo_domiciliario) {
-                    // El consecutivo_domiciliario ya viene con formato NOMBRE#NUMERO desde la BD
-                    orderDisplay = order.consecutivo_domiciliario;
-                } else if (order.consecutivo_dia) {
-                    orderDisplay = `#${order.consecutivo_dia}`;
-                } else {
-                    orderDisplay = `#${order.id.substring(0, 8)}`;
+                // Formatear fecha y hora del pedido
+                let fechaDisplay = '--';
+                try {
+                    const fecha = new Date(order.created_at);
+                    const dia = fecha.toLocaleDateString('es-CO', {
+                        day: '2-digit',
+                        month: '2-digit'
+                    });
+                    const hora = fecha.toLocaleTimeString('es-CO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                    fechaDisplay = `${dia}<br><small style="font-size: 10px;">${hora}</small>`;
+                } catch (e) {
+                    fechaDisplay = '--';
                 }
                 row.innerHTML = `
-                    <td style="text-align: center;"><strong>${orderDisplay}</strong></td>
+                    <td style="text-align: center;">${fechaDisplay}</td>
                     <td style="text-align: center;"><strong>${order.cliente}</strong><br><small style="font-size: 11px;">${order.telefono_cliente}</small></td>
                     <td style="text-align: center; font-size: 12px;">${order.direccion}</td>
                     <td style="text-align: center; font-size: 12px;">${order.barrio || '--'}</td>
@@ -3396,13 +3458,36 @@
             console.log('🔄 Actualizando lista de pedidos...');
             const btn = document.getElementById('btn-refresh-orders');
             const originalText = btn.textContent;
-            
+
             // Cambiar texto del botón para dar feedback visual
             btn.textContent = '⏳ Actualizando...';
             btn.disabled = true;
-            
+
             try {
+                // 1. Sincronizar con Dyalogo primero
+                if (window.webhookService) {
+                    console.log('📡 Sincronizando con Dyalogo...');
+                    btn.textContent = '📡 Sincronizando Dyalogo...';
+                    try {
+                        const result = await window.webhookService.syncOrders({ limit: 100 });
+                        console.log(`✅ Dyalogo sync completado: ${result.created} nuevos pedidos`);
+
+                        // Actualizar contador en configuración
+                        updateDyalogoStatus(result);
+
+                        // Mostrar alerta si hay nuevos pedidos
+                        if (result.created > 0) {
+                            showAlert('orders-alert', 'success', `📡 ${result.created} nuevo(s) pedido(s) importado(s) desde Dyalogo`);
+                        }
+                    } catch (dyalogoError) {
+                        console.error('⚠️ Error sincronizando Dyalogo (continuando con actualización local):', dyalogoError);
+                    }
+                }
+
+                // 2. Recargar pedidos de Supabase
+                btn.textContent = '⏳ Cargando pedidos...';
                 await loadOrders();
+
                 btn.textContent = '✅ Actualizado';
                 setTimeout(() => {
                     btn.textContent = originalText;
@@ -4051,20 +4136,35 @@
                 const searchFechaDesde = document.getElementById('search-fecha-desde')?.value || '';
                 const searchFechaHasta = document.getElementById('search-fecha-hasta')?.value || '';
 
-                // Obtener todos los pedidos
-                const { data: allOrders, error } = await supabase
+                // Construir query a Supabase con filtros de fecha
+                let query = supabase
                     .from('pedidos')
                     .select('*')
                     .order('created_at', { ascending: false });
 
+                // Aplicar filtros de fecha directamente en Supabase (más eficiente)
+                if (searchFechaDesde) {
+                    query = query.gte('created_at', searchFechaDesde + 'T00:00:00');
+                }
+                if (searchFechaHasta) {
+                    query = query.lte('created_at', searchFechaHasta + 'T23:59:59');
+                }
+
+                // Aumentar límite para consultas históricas (3 meses)
+                query = query.limit(10000);
+
+                const { data: allOrders, error } = await query;
+
                 if (error) throw error;
 
-                // Aplicar filtros
-                let filteredOrders = allOrders;
+                console.log(`📊 Pedidos obtenidos de Supabase: ${allOrders?.length || 0}`);
+
+                // Aplicar filtros adicionales (no de fecha)
+                let filteredOrders = allOrders || [];
 
                 if (searchId) {
                     filteredOrders = filteredOrders.filter(o =>
-                        o.id.toLowerCase().includes(searchId)
+                        o.telefono_cliente && o.telefono_cliente.toLowerCase().includes(searchId)
                     );
                 }
 
@@ -4122,29 +4222,7 @@
                     );
                 }
 
-                if (searchFechaDesde) {
-                    try {
-                        const fechaDesde = new Date(searchFechaDesde + 'T00:00:00');
-                        filteredOrders = filteredOrders.filter(o => {
-                            const orderDate = new Date(o.created_at);
-                            return orderDate >= fechaDesde;
-                        });
-                    } catch (e) {
-                        console.error('Error al procesar fecha desde:', e);
-                    }
-                }
-
-                if (searchFechaHasta) {
-                    try {
-                        const fechaHasta = new Date(searchFechaHasta + 'T23:59:59');
-                        filteredOrders = filteredOrders.filter(o => {
-                            const orderDate = new Date(o.created_at);
-                            return orderDate <= fechaHasta;
-                        });
-                    } catch (e) {
-                        console.error('Error al procesar fecha hasta:', e);
-                    }
-                }
+                // Nota: Los filtros de fecha ya se aplicaron en la consulta a Supabase
 
                 // Renderizar resultados
                 renderSearchResults(filteredOrders);
@@ -4176,8 +4254,18 @@
 
             orders.forEach(order => {
                 const row = tbody.insertRow();
+                // Formatear fecha del pedido
+                let fechaFormateada = '--';
+                try {
+                    const fecha = new Date(order.created_at);
+                    const dateStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const timeStr = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    fechaFormateada = `${dateStr}<br><small style="font-size: 11px;">${timeStr}</small>`;
+                } catch (e) {
+                    fechaFormateada = order.created_at || '--';
+                }
                 row.innerHTML = `
-                    <td style="text-align: center;"><strong>#${order.id.substring(0, 8)}</strong></td>
+                    <td style="text-align: center;">${fechaFormateada}</td>
                     <td style="text-align: center;"><strong>${order.cliente}</strong><br><small style="font-size: 11px;">${order.telefono_cliente}</small></td>
                     <td style="text-align: center; font-size: 12px;">${order.direccion}</td>
                     <td style="text-align: center; font-size: 12px;">${order.barrio || '--'}</td>
@@ -5350,6 +5438,422 @@
         
         // Ejecutar restauración después de que todo esté cargado
         setTimeout(restoreActiveModule, 100);
+
+        // ============================================
+        // INTEGRACIÓN WEBHOOK DYALOGO
+        // ============================================
+
+        // Inicializar servicio de webhook
+        let webhookService = null;
+        let autoSyncInterval = null;
+        let importedTodayCount = 0;
+
+        function initDyalogoWebhook() {
+            if (window.DyalogoWebhookConfig && window.DyalogoWebhookService) {
+                webhookService = new DyalogoWebhookService(DyalogoWebhookConfig);
+                window.webhookService = webhookService;
+                console.log('✅ Webhook Dyalogo inicializado');
+
+                // Cargar estado guardado
+                loadDyalogoState();
+            } else {
+                console.warn('⚠️ Servicios de webhook Dyalogo no disponibles');
+            }
+        }
+
+        async function updateDyalogoStatus(result) {
+            if (result) {
+                const statusElem = document.getElementById('dyalogo-sync-status');
+                const lastSyncElem = document.getElementById('dyalogo-last-sync');
+
+                if (statusElem) {
+                    statusElem.textContent = result.success ? '🔄 Activo' : '❌ Error';
+                }
+
+                if (lastSyncElem) {
+                    const now = new Date();
+                    lastSyncElem.textContent = now.toLocaleTimeString('es-CO');
+                }
+
+                // Actualizar contador real desde Supabase
+                await countDyalogoImportedToday();
+
+                // Guardar estado
+                saveDyalogoState();
+
+                // Agregar al log si hubo nuevos pedidos
+                if (result.created > 0) {
+                    addSyncLog(`+${result.created} pedido(s) nuevo(s) importado(s)`, 'success');
+                }
+            }
+        }
+
+        function saveDyalogoState() {
+            const state = {
+                lastSync: new Date().toISOString(),
+                importedToday: importedTodayCount,
+                date: new Date().toDateString()
+            };
+            localStorage.setItem('fluxi_dyalogo_state', JSON.stringify(state));
+        }
+
+        async function loadDyalogoState() {
+            // Cargar última sincronización desde localStorage
+            const stateStr = localStorage.getItem('fluxi_dyalogo_state');
+            if (stateStr) {
+                try {
+                    const state = JSON.parse(stateStr);
+                    const lastSyncElem = document.getElementById('dyalogo-last-sync');
+
+                    if (lastSyncElem && state.lastSync) {
+                        const lastSync = new Date(state.lastSync);
+                        const today = new Date().toDateString();
+                        if (state.date === today) {
+                            lastSyncElem.textContent = lastSync.toLocaleTimeString('es-CO');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error cargando estado de Dyalogo:', error);
+                }
+            }
+
+            // Siempre contar desde Supabase para obtener el número real
+            await countDyalogoImportedToday();
+
+            // Iniciar auto-sync siempre activo (cada 1 minuto)
+            setTimeout(() => {
+                startAutoSyncAlways();
+            }, 2000); // Esperar 2 segundos antes de iniciar
+        }
+
+        // Función para agregar log al panel de sincronización
+        function addSyncLog(message, type = 'info') {
+            const logContainer = document.getElementById('dyalogo-sync-log');
+            if (!logContainer) return;
+
+            const timestamp = new Date().toLocaleTimeString('es-CO');
+            const colors = {
+                info: '#17a2b8',
+                success: '#28a745',
+                warning: '#ffc107',
+                error: '#dc3545'
+            };
+
+            const logEntry = document.createElement('div');
+            logEntry.style.cssText = `border-left: 3px solid ${colors[type]}; padding-left: 8px; margin-bottom: 5px;`;
+            logEntry.innerHTML = `<span style="color: #888;">[${timestamp}]</span> ${message}`;
+
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Función para contar pedidos importados de Dyalogo hoy
+        async function countDyalogoImportedToday() {
+            try {
+                // Obtener inicio del día en hora Colombia
+                const now = new Date();
+                const colombiaOffset = -5 * 60; // UTC-5
+                const localOffset = now.getTimezoneOffset();
+                const colombiaTime = new Date(now.getTime() + (localOffset - colombiaOffset) * 60000);
+
+                const startOfDay = new Date(colombiaTime);
+                startOfDay.setHours(0, 0, 0, 0);
+
+                // Contar pedidos importados de Dyalogo creados hoy
+                // Se identifica por el campo notas que contiene "Dyalogo ID:"
+                const { data, error } = await supabase
+                    .from('pedidos')
+                    .select('id, notas')
+                    .gte('created_at', startOfDay.toISOString());
+
+                if (error) throw error;
+
+                // Filtrar los que tienen "Dyalogo ID:" en las notas
+                const importedCount = data ? data.filter(p => p.notas && p.notas.includes('Dyalogo ID:')).length : 0;
+
+                const importedElem = document.getElementById('dyalogo-imported-today');
+                if (importedElem) {
+                    importedElem.textContent = importedCount;
+                }
+                importedTodayCount = importedCount;
+
+                console.log(`📊 Pedidos importados de Dyalogo hoy: ${importedCount}`);
+                return importedCount;
+            } catch (error) {
+                console.error('Error contando pedidos importados:', error);
+                return 0;
+            }
+        }
+
+        // Función para iniciar auto-sync (siempre activo, cada 1 minuto)
+        function startAutoSyncAlways() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+            }
+
+            const intervalMs = 60000; // 1 minuto
+
+            // Sincronización inicial
+            syncDyalogoPedidosDelDia();
+
+            // Configurar intervalo
+            autoSyncInterval = setInterval(() => {
+                syncDyalogoPedidosDelDia();
+            }, intervalMs);
+
+            // Actualizar estado visual
+            const statusElem = document.getElementById('dyalogo-sync-status');
+            if (statusElem) {
+                statusElem.textContent = '🔄 Activo';
+            }
+
+            console.log('✅ Auto-sync Dyalogo ACTIVADO (cada 1 minuto)');
+            addSyncLog('Auto-sync iniciado (cada 1 minuto)', 'success');
+        }
+
+        // Auto-sincronización de pedidos del día desde Dyalogo
+        const SYNC_INTERVAL_MS = 60 * 1000; // 1 minuto
+        let lastSyncTime = null;
+        let syncInProgress = false;
+
+        function startAutoSync() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+            }
+
+            // Sincronización inicial inmediata
+            syncDyalogoPedidosDelDia();
+
+            // Sincronizar cada minuto
+            autoSyncInterval = setInterval(() => {
+                syncDyalogoPedidosDelDia();
+            }, SYNC_INTERVAL_MS);
+
+            console.log('✅ Auto-sync Dyalogo ACTIVADO (cada 1 minuto)');
+
+            // Mostrar indicador visual
+            showSyncIndicator(true);
+        }
+
+        function stopAutoSync() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
+            }
+            showSyncIndicator(false);
+            console.log('🛑 Auto-sync Dyalogo detenido');
+        }
+
+        function showSyncIndicator(active) {
+            let indicator = document.getElementById('sync-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'sync-indicator';
+                indicator.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: ${active ? '#28a745' : '#6c757d'};
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 25px;
+                    font-size: 12px;
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                `;
+                indicator.onclick = () => {
+                    if (autoSyncInterval) {
+                        stopAutoSync();
+                    } else {
+                        startAutoSync();
+                    }
+                };
+                document.body.appendChild(indicator);
+            }
+
+            if (active) {
+                indicator.innerHTML = `
+                    <span style="width: 8px; height: 8px; background: #90EE90; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                    <span>Sync Dyalogo: ON</span>
+                `;
+                indicator.style.background = '#28a745';
+            } else {
+                indicator.innerHTML = `
+                    <span style="width: 8px; height: 8px; background: #ccc; border-radius: 50%;"></span>
+                    <span>Sync Dyalogo: OFF</span>
+                `;
+                indicator.style.background = '#6c757d';
+            }
+        }
+
+        async function syncDyalogoPedidosDelDia() {
+            if (syncInProgress) {
+                console.log('⏳ Sincronización ya en progreso, omitiendo...');
+                return;
+            }
+
+            syncInProgress = true;
+            const indicator = document.getElementById('sync-indicator');
+
+            try {
+                if (!webhookService) {
+                    initDyalogoWebhook();
+                }
+
+                if (!webhookService) {
+                    console.error('❌ No se pudo inicializar webhook service');
+                    syncInProgress = false;
+                    return;
+                }
+
+                // Actualizar indicador visual
+                if (indicator) {
+                    indicator.innerHTML = `
+                        <span style="width: 8px; height: 8px; background: #FFD700; border-radius: 50%; animation: pulse 0.5s infinite;"></span>
+                        <span>Sincronizando...</span>
+                    `;
+                }
+
+                console.log('🔄 Sincronizando pedidos del día desde Dyalogo...');
+
+                // Configurar para obtener solo pedidos del día
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const result = await webhookService.syncOrders({
+                    limit: 200,
+                    fromDate: today
+                });
+
+                lastSyncTime = new Date();
+                updateDyalogoStatus(result);
+
+                // Si hay nuevos pedidos, mostrar notificación y recargar lista
+                if (result.created > 0) {
+                    console.log(`✅ ${result.created} nuevos pedidos importados de Dyalogo`);
+
+                    // Mostrar notificación toast
+                    showNewOrdersNotification(result.created);
+
+                    // Si estamos en el módulo de pedidos, recargar automáticamente
+                    const activeModule = document.querySelector('.module-container:not([style*="display: none"])');
+                    if (activeModule && activeModule.id === 'module-pedidos') {
+                        await loadOrders();
+                    }
+
+                    // Reproducir sonido de notificación (opcional)
+                    playNotificationSound();
+                }
+
+                // Restaurar indicador
+                if (indicator) {
+                    const timeStr = lastSyncTime.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                    indicator.innerHTML = `
+                        <span style="width: 8px; height: 8px; background: #90EE90; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                        <span>Sync: ${timeStr}</span>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('❌ Error en sincronización Dyalogo:', error);
+                if (indicator) {
+                    indicator.innerHTML = `
+                        <span style="width: 8px; height: 8px; background: #ff6b6b; border-radius: 50%;"></span>
+                        <span>Error sync</span>
+                    `;
+                }
+            } finally {
+                syncInProgress = false;
+            }
+        }
+
+        function showNewOrdersNotification(count) {
+            // Crear notificación toast
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                z-index: 10000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            toast.innerHTML = `
+                <span style="font-size: 24px;">🛵</span>
+                <div>
+                    <div style="font-weight: bold;">${count} nuevo${count > 1 ? 's' : ''} pedido${count > 1 ? 's' : ''}</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Importado desde Dyalogo</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            // Remover después de 5 segundos
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        function playNotificationSound() {
+            try {
+                // Crear un beep simple usando Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.1;
+
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 200);
+            } catch (e) {
+                // Silenciar errores de audio
+            }
+        }
+
+        // Agregar estilos de animación
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Inicializar webhook y auto-sync al cargar
+        setTimeout(() => {
+            initDyalogoWebhook();
+            // Auto-sync ACTIVADO por defecto
+            startAutoSync();
+        }, 2000);
+
     </script>
 </body>
 </html>

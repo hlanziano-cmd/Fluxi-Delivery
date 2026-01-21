@@ -145,23 +145,67 @@ export class OrdersController {
      */
     async loadOrders() {
         try {
-            // Get today's date in Colombia timezone (UTC-5)
-            const today = new Date();
-            const colombiaOffset = -5 * 60; // UTC-5 in minutes
-            const localOffset = today.getTimezoneOffset();
-            const colombiaTime = new Date(today.getTime() + (localOffset + colombiaOffset) * 60000);
+            // Get reset hour from localStorage (default 1 AM Colombia = 6 AM UTC)
+            const resetHour = parseInt(localStorage.getItem('orderResetHour') || '1');
 
-            const startOfDay = new Date(colombiaTime);
-            startOfDay.setHours(0, 0, 0, 0);
+            // Calculate today's start time based on reset hour in Colombia timezone
+            // Colombia is UTC-5, so reset hour in UTC = resetHour + 5
+            const resetHourUTC = (resetHour + 5) % 24;
 
-            const endOfDay = new Date(colombiaTime);
-            endOfDay.setHours(23, 59, 59, 999);
+            const now = new Date();
+            const nowUTC = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate(),
+                now.getUTCHours(),
+                now.getUTCMinutes(),
+                now.getUTCSeconds()
+            ));
+
+            // Calculate start of "today" based on reset hour
+            const startOfDay = new Date(Date.UTC(
+                nowUTC.getUTCFullYear(),
+                nowUTC.getUTCMonth(),
+                nowUTC.getUTCDate(),
+                resetHourUTC,
+                0,
+                0,
+                0
+            ));
+
+            // If current time is before reset hour, go back one day
+            if (nowUTC.getUTCHours() < resetHourUTC) {
+                startOfDay.setUTCDate(startOfDay.getUTCDate() - 1);
+            }
+
+            // End of day is 24 hours after start
+            const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[OrdersController] Date filter range (UTC):', {
+                    start: startOfDay.toISOString(),
+                    end: endOfDay.toISOString(),
+                    resetHourColombia: resetHour,
+                    resetHourUTC: resetHourUTC
+                });
+            }
 
             // Get all orders and filter for today
             const allOrders = await this.orderService.getAllOrders();
+
+            if (APP_CONFIG.enableDebug) {
+                console.info('[OrdersController] Total orders from DB:', allOrders.length);
+            }
+
             this.orders = allOrders.filter(order => {
                 const orderDate = new Date(order.fecha_pedido);
-                return orderDate >= startOfDay && orderDate <= endOfDay;
+                const isInRange = orderDate >= startOfDay && orderDate <= endOfDay;
+
+                if (APP_CONFIG.enableDebug && allOrders.length <= 20) {
+                    console.log(`[OrdersController] Order ${order.id}: fecha=${order.fecha_pedido}, inRange=${isInRange}`);
+                }
+
+                return isInRange;
             });
 
             this.updateStatistics();
@@ -169,6 +213,9 @@ export class OrdersController {
             if (APP_CONFIG.enableDebug) {
                 console.info('[OrdersController] Loaded today\'s orders:', this.orders.length);
             }
+
+            // Log for user visibility
+            console.log(`📦 Pedidos del día cargados: ${this.orders.length}`);
         } catch (error) {
             console.error('[OrdersController] Error loading orders:', error);
             this.showAlert('danger', 'Error al cargar pedidos');
@@ -191,7 +238,7 @@ export class OrdersController {
     }
 
     /**
-     * Update statistics cards
+     * Update statistics cards and total counter
      */
     updateStatistics() {
         const stats = {
@@ -207,6 +254,12 @@ export class OrdersController {
                 stats[order.estado]++;
             }
         });
+
+        // Update total orders counter
+        const totalCounterEl = document.getElementById('total-orders-count');
+        if (totalCounterEl) {
+            totalCounterEl.textContent = this.orders.length;
+        }
 
         document.getElementById('stat-pendiente').textContent = stats.pendiente;
         document.getElementById('stat-asignado').textContent = stats.asignado;
@@ -244,14 +297,22 @@ export class OrdersController {
             containerId: 'orders-table-container',
             columns: [
                 {
-                    key: 'consecutivo_domiciliario',
-                    label: 'ID',
+                    key: 'fecha_pedido',
+                    label: 'Fecha',
                     sortable: true,
-                    render: (value, row) => {
-                        if (row.domiciliario_id && row.consecutivo_domiciliario) {
-                            return `#${row.consecutivo_domiciliario}`;
+                    render: (value) => {
+                        if (!value) return '-';
+                        try {
+                            const date = new Date(value);
+                            // Format as HH:MM (time only since we're showing today's orders)
+                            return date.toLocaleTimeString('es-CO', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                            });
+                        } catch {
+                            return value;
                         }
-                        return `#${row.consecutivo || row.id}`;
                     },
                 },
                 {

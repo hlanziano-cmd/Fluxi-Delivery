@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronización Dyalogo - Fluxi</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-item .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .status-item .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-item .value.success {
+            color: #28a745;
+        }
+
+        .status-item .value.warning {
+            color: #ffc107;
+        }
+
+        .status-item .value.danger {
+            color: #dc3545;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid transparent;
+            padding-left: 10px;
+        }
+
+        .log-entry.info {
+            border-left-color: #17a2b8;
+        }
+
+        .log-entry.success {
+            border-left-color: #28a745;
+        }
+
+        .log-entry.warning {
+            border-left-color: #ffc107;
+        }
+
+        .log-entry.error {
+            border-left-color: #dc3545;
+        }
+
+        .log-timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        .settings-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .settings-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .history-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔄 Sincronización Dyalogo → Fluxi</h1>
+            <p>Importa pedidos automáticamente desde Dyalogo a tu sistema Fluxi</p>
+        </div>
+
+        <!-- Status Card -->
+        <div class="status-card">
+            <h3 style="margin-bottom: 15px; color: #333;">📊 Estado Actual</h3>
+            <div id="sync-status-text" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; text-align: center; font-weight: 600;">
+                ⏸️ Esperando acción del usuario...
+            </div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="label">Última Sincronización</div>
+                    <div id="last-sync-time" class="value" style="font-size: 1.2em; color: #666;">--</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Obtenidos de Dyalogo</div>
+                    <div id="fetched-count" class="value">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Creados en Fluxi</div>
+                    <div id="created-count" class="value success">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Duplicados (Omitidos)</div>
+                    <div id="duplicate-count" class="value warning">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="btn-sync-now">
+                <span id="sync-icon">🔄</span> Sincronizar Ahora
+            </button>
+            <button class="btn btn-success" id="btn-auto-sync">
+                ▶️ Iniciar Auto-Sync
+            </button>
+            <button class="btn btn-danger" id="btn-stop-sync" disabled>
+                ⏸️ Detener Auto-Sync
+            </button>
+            <button class="btn btn-info" id="btn-test-connection">
+                🔌 Probar Conexión
+            </button>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings-section">
+            <h3>⚙️ Configuración</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Intervalo de Auto-Sync (minutos)</label>
+                    <input type="number" id="sync-interval" value="5" min="1" max="60">
+                </div>
+                <div class="form-group">
+                    <label>Límite de Registros por Consulta</label>
+                    <input type="number" id="record-limit" value="50" min="1" max="500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">📝 Registro de Actividad</h3>
+            <div class="log-container" id="log-container">
+                <div class="log-entry info">
+                    <span class="log-timestamp">[Inicio]</span>
+                    <span>Sistema de sincronización Dyalogo iniciado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="index.html" class="btn btn-info">
+                ← Volver al Panel de Administración
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="config/dyalogo-webhook.config.js"></script>
+    <script src="services/dyalogo-webhook.service.js"></script>
+    <script>
+        // Inicializar Supabase
+        const SUPABASE_URL = 'https://lbifbexhmvbanvrjfglp.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiaWZiZXhobXZiYW52cmpmZ2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Mjg5MDQsImV4cCI6MjA3NjUwNDkwNH0.ZXjCv4DkNobkn3IDK9wYBjjOV55Bf_UwcSxhkt6YqGo';
+
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseClient = supabaseClient;
+
+        // Inicializar servicio de webhook
+        const webhookService = new DyalogoWebhookService(DyalogoWebhookConfig);
+        window.webhookService = webhookService;
+
+        // Referencias a elementos DOM
+        const syncStatusText = document.getElementById('sync-status-text');
+        const lastSyncTime = document.getElementById('last-sync-time');
+        const fetchedCount = document.getElementById('fetched-count');
+        const createdCount = document.getElementById('created-count');
+        const duplicateCount = document.getElementById('duplicate-count');
+        const logContainer = document.getElementById('log-container');
+        const syncIcon = document.getElementById('sync-icon');
+
+        const btnSyncNow = document.getElementById('btn-sync-now');
+        const btnAutoSync = document.getElementById('btn-auto-sync');
+        const btnStopSync = document.getElementById('btn-stop-sync');
+        const btnTestConnection = document.getElementById('btn-test-connection');
+
+        // Función para agregar log
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+
+            const timestamp = new Date().toLocaleTimeString('es-CO');
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span>${message}</span>
+            `;
+
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Función para actualizar UI con resultados
+        function updateUI(result) {
+            if (result.success) {
+                syncStatusText.textContent = '✅ Sincronización completada exitosamente';
+                syncStatusText.style.background = '#d4edda';
+                syncStatusText.style.color = '#155724';
+            } else {
+                syncStatusText.textContent = '❌ Error en la sincronización';
+                syncStatusText.style.background = '#f8d7da';
+                syncStatusText.style.color = '#721c24';
+            }
+
+            lastSyncTime.textContent = new Date().toLocaleTimeString('es-CO');
+            fetchedCount.textContent = result.fetched;
+            createdCount.textContent = result.created;
+            duplicateCount.textContent = result.duplicates;
+
+            // Logs detallados
+            addLog(`Obtenidos: ${result.fetched} | Creados: ${result.created} | Duplicados: ${result.duplicates}`,
+                   result.success ? 'success' : 'error');
+
+            if (result.errors.length > 0) {
+                result.errors.forEach(err => {
+                    addLog(`Error: ${JSON.stringify(err)}`, 'error');
+                });
+            }
+        }
+
+        // Botón: Sincronizar Ahora
+        btnSyncNow.addEventListener('click', async () => {
+            btnSyncNow.disabled = true;
+            syncIcon.classList.add('spinning');
+            syncStatusText.textContent = '🔄 Sincronizando...';
+            syncStatusText.style.background = '#fff3cd';
+            syncStatusText.style.color = '#856404';
+
+            addLog('Iniciando sincronización manual...', 'info');
+
+            try {
+                const result = await webhookService.syncOrders();
+                updateUI(result);
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+            } finally {
+                btnSyncNow.disabled = false;
+                syncIcon.classList.remove('spinning');
+            }
+        });
+
+        // Botón: Iniciar Auto-Sync
+        btnAutoSync.addEventListener('click', () => {
+            const intervalMinutes = parseInt(document.getElementById('sync-interval').value);
+            const intervalMs = intervalMinutes * 60 * 1000;
+
+            webhookService.startAutoSync(intervalMs);
+
+            btnAutoSync.disabled = true;
+            btnStopSync.disabled = false;
+
+            syncStatusText.textContent = `🔄 Auto-Sync activo (cada ${intervalMinutes} min)`;
+            syncStatusText.style.background = '#d1ecf1';
+            syncStatusText.style.color = '#0c5460';
+
+            addLog(`Auto-Sync iniciado (intervalo: ${intervalMinutes} minutos)`, 'success');
+        });
+
+        // Botón: Detener Auto-Sync
+        btnStopSync.addEventListener('click', () => {
+            webhookService.stopAutoSync();
+
+            btnAutoSync.disabled = false;
+            btnStopSync.disabled = true;
+
+            syncStatusText.textContent = '⏸️ Auto-Sync detenido';
+            syncStatusText.style.background = '#f8f9fa';
+            syncStatusText.style.color = '#666';
+
+            addLog('Auto-Sync detenido por el usuario', 'warning');
+        });
+
+        // Botón: Probar Conexión
+        btnTestConnection.addEventListener('click', async () => {
+            btnTestConnection.disabled = true;
+            addLog('Probando conexión con Dyalogo...', 'info');
+
+            try {
+                const records = await webhookService.fetchFromDyalogo(2); // Solo 2 registros
+                addLog(`✅ Conexión exitosa. Se obtuvieron ${records.length} registros`, 'success');
+
+                if (records.length > 0) {
+                    addLog(`Ejemplo de registro: ${JSON.stringify(records[0]).substring(0, 100)}...`, 'info');
+                }
+            } catch (error) {
+                addLog(`❌ Error de conexión: ${error.message}`, 'error');
+            } finally {
+                btnTestConnection.disabled = false;
+            }
+        });
+
+        // Actualizar configuración cuando cambian los inputs
+        document.getElementById('record-limit').addEventListener('change', (e) => {
+            DyalogoWebhookConfig.syncConfig.defaultLimit = parseInt(e.target.value);
+            addLog(`Límite de registros actualizado a: ${e.target.value}`, 'info');
+        });
+
+        // Log de inicio
+        addLog('Configuración cargada correctamente', 'success');
+        addLog(`API URL: ${DyalogoWebhookConfig.apiUrl}`, 'info');
+        addLog(`Supabase conectado: ${supabaseClient ? '✅' : '❌'}`, supabaseClient ? 'success' : 'error');
+    </script>
+</body>
+</html>
