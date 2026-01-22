@@ -109,35 +109,24 @@ class DyalogoWebhookService {
                 throw new Error('Supabase no está inicializado');
             }
 
-            // Buscar por Dyalogo ID en las notas (forma más precisa)
+            // Buscar SOLO por Dyalogo ID en las notas
+            // No usamos fallback de teléfono+dirección porque un cliente
+            // puede hacer múltiples pedidos en el mismo día
             const dyalogoId = orderData._dyalogoId;
-            if (dyalogoId) {
-                const searchPattern = `Dyalogo ID: ${dyalogoId}`;
-                const { data, error } = await window.supabaseClient
-                    .from('pedidos')
-                    .select('id, notas')
-                    .ilike('notas', `%${searchPattern}%`)
-                    .limit(1);
-
-                if (error) {
-                    console.error('Error verificando duplicados por Dyalogo ID:', error);
-                    // Fallback: buscar por teléfono y dirección
-                } else if (data && data.length > 0) {
-                    return true;
-                }
+            if (!dyalogoId) {
+                // Si no hay Dyalogo ID, permitir inserción
+                return false;
             }
 
-            // Fallback: buscar por teléfono, dirección y fecha similar
+            const searchPattern = `Dyalogo ID: ${dyalogoId}`;
             const { data, error } = await window.supabaseClient
                 .from('pedidos')
                 .select('id')
-                .eq('telefono_cliente', orderData.telefono_cliente)
-                .eq('direccion', orderData.direccion)
-                .gte('created_at', new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()) // Últimas 48h
+                .ilike('notas', `%${searchPattern}%`)
                 .limit(1);
 
             if (error) {
-                console.error('Error verificando duplicados:', error);
+                console.error('Error verificando duplicados por Dyalogo ID:', error);
                 return false; // En caso de error, permitir inserción
             }
 
