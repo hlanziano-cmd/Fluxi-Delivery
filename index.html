@@ -1721,7 +1721,10 @@
                         }, 15000);
                     }, 100);
                 } else if (moduleName === 'pedidos') {
-                    setTimeout(() => loadOrders(), 100);
+                    setTimeout(() => {
+                        loadOrders();
+                        startOrdersPeriodicRefresh(); // Iniciar auto-refresh cada minuto
+                    }, 100);
                 } else if (moduleName === 'dashboard') {
                     setTimeout(() => {
                         loadDashboardFilters();
@@ -2207,6 +2210,25 @@
 
         // ========== PEDIDOS ==========
         let ordersAutoReloadInterval = null;
+        let ordersPeriodicRefreshInterval = null;
+
+        // Auto-refresh de pedidos cada minuto cuando el módulo está visible
+        function startOrdersPeriodicRefresh() {
+            if (ordersPeriodicRefreshInterval) {
+                clearInterval(ordersPeriodicRefreshInterval);
+            }
+
+            // Refrescar cada 60 segundos
+            ordersPeriodicRefreshInterval = setInterval(async () => {
+                const pedidosModule = document.getElementById('module-pedidos');
+                if (pedidosModule && pedidosModule.style.display !== 'none') {
+                    console.log('🔄 Auto-refresh periódico de pedidos...');
+                    await loadOrders();
+                }
+            }, 60000);
+
+            console.log('✅ Auto-refresh de pedidos ACTIVADO (cada 1 minuto)');
+        }
 
         async function loadOrders() {
             if (!supabase) return;
@@ -5769,22 +5791,32 @@
                 lastSyncTime = new Date();
                 updateDyalogoStatus(result);
 
-                // Si hay nuevos pedidos, mostrar notificación y recargar lista
+                // SIEMPRE recargar la lista de pedidos después de cada sincronización
+                // Verificar si el módulo de pedidos está visible
+                const pedidosModule = document.getElementById('module-pedidos');
+                const isVisible = pedidosModule && pedidosModule.style.display !== 'none';
+
+                console.log(`🔄 Sync completado. Módulo pedidos visible: ${isVisible}, Creados: ${result.created}`);
+
+                if (isVisible) {
+                    await loadOrders();
+                    console.log('✅ Tabla de pedidos recargada');
+                }
+
+                // Si hay nuevos pedidos, mostrar notificación
                 if (result.created > 0) {
                     console.log(`✅ ${result.created} nuevos pedidos importados de Dyalogo`);
-
-                    // Mostrar notificación toast
                     showNewOrdersNotification(result.created);
+                    playNotificationSound();
 
-                    // Si estamos en el módulo de pedidos, recargar automáticamente
-                    const activeModule = document.querySelector('.module-container:not([style*="display: none"])');
-                    if (activeModule && activeModule.id === 'module-pedidos') {
+                    // Forzar recarga incluso si no estamos en el módulo
+                    if (!isVisible) {
                         await loadOrders();
                     }
-
-                    // Reproducir sonido de notificación (opcional)
-                    playNotificationSound();
                 }
+
+                // Actualizar contador de importados
+                await countDyalogoImportedToday();
 
                 // Restaurar indicador
                 if (indicator) {
@@ -5888,6 +5920,13 @@
             initDyalogoWebhook();
             // Auto-sync ACTIVADO por defecto
             startAutoSync();
+            // Iniciar auto-refresh de pedidos
+            startOrdersPeriodicRefresh();
+            // Cargar pedidos iniciales si estamos en el módulo de pedidos
+            const pedidosModule = document.getElementById('module-pedidos');
+            if (pedidosModule && pedidosModule.style.display !== 'none') {
+                loadOrders();
+            }
         }, 2000);
 
     </script>
