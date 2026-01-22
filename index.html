@@ -3712,11 +3712,43 @@
             }
         }
         
+        // Función auxiliar para cargar todos los pedidos con paginación
+        async function fetchAllOrders() {
+            const PAGE_SIZE = 1000;
+            let allOrders = [];
+            let page = 0;
+            let hasMore = true;
+
+            while (hasMore) {
+                const { data, error } = await supabase
+                    .from('pedidos')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+                if (error) {
+                    console.error('Error en paginación:', error);
+                    break;
+                }
+
+                if (data && data.length > 0) {
+                    allOrders = allOrders.concat(data);
+                    page++;
+                    hasMore = data.length === PAGE_SIZE;
+                } else {
+                    hasMore = false;
+                }
+            }
+
+            return allOrders;
+        }
+
         async function loadDashboard() {
             if (!supabase) return;
             try {
-                const ordersResult = await supabase.from('pedidos').select('*');
-                const orders = ordersResult.data || [];
+                // Obtener TODOS los pedidos históricos con paginación
+                const orders = await fetchAllOrders();
+                console.log(`📊 Reportes: ${orders.length} pedidos cargados para análisis`);
                 
                 // Aplicar filtros
                 const filteredOrders = getFilteredOrders(orders);
@@ -5550,21 +5582,25 @@
         // Función para contar pedidos importados de Dyalogo hoy
         async function countDyalogoImportedToday() {
             try {
-                // Obtener inicio del día en hora Colombia
-                const now = new Date();
-                const colombiaOffset = -5 * 60; // UTC-5
-                const localOffset = now.getTimezoneOffset();
-                const colombiaTime = new Date(now.getTime() + (localOffset - colombiaOffset) * 60000);
+                // Obtener inicio del día en hora Colombia (UTC-5)
+                // Usamos Intl.DateTimeFormat para obtener la fecha correcta en Colombia
+                const formatter = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'America/Bogota',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                const todayColombia = formatter.format(new Date()); // YYYY-MM-DD
 
-                const startOfDay = new Date(colombiaTime);
-                startOfDay.setHours(0, 0, 0, 0);
+                // El inicio del día en Colombia (00:00) es las 05:00 UTC
+                const startOfDayUTC = new Date(todayColombia + 'T05:00:00.000Z');
 
                 // Contar pedidos importados de Dyalogo creados hoy
                 // Se identifica por el campo notas que contiene "Dyalogo ID:"
                 const { data, error } = await supabase
                     .from('pedidos')
                     .select('id, notas')
-                    .gte('created_at', startOfDay.toISOString());
+                    .gte('created_at', startOfDayUTC.toISOString());
 
                 if (error) throw error;
 
