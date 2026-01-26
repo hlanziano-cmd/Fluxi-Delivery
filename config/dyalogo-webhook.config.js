@@ -7,9 +7,15 @@
 
 const DyalogoWebhookConfig = {
     // URL del servicio de Dyalogo
-    // NOTA: Usar proxy local para evitar problemas de CORS
-    apiUrl: 'http://localhost:3000/api/dyalogo',  // Proxy local
-    // apiUrl: 'http://addons.mercurio2.dyalogo.cloud:8080/dy_servicios_adicionales/svrs/dm/info/data',  // Directo (CORS error)
+    // Se detecta automáticamente: producción (Vercel) o desarrollo local
+    get apiUrl() {
+        // En producción (Vercel) usar la API serverless
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return '/api/dyalogo';  // Vercel serverless function
+        }
+        // En desarrollo local usar el proxy local
+        return 'http://localhost:3000/api/dyalogo';
+    },
 
     // Credenciales de autenticación
     credentials: {

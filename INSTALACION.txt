@@ -1,0 +1,93 @@
+================================================================================
+                    FLUXI DELIVERY - GUIA DE INSTALACION
+================================================================================
+
+REQUISITOS PREVIOS:
+-------------------
+1. Windows 10 o superior
+2. Node.js v18 o superior (https://nodejs.org)
+3. Navegador web moderno (Chrome, Edge, Firefox)
+
+
+INSTALACION RAPIDA:
+-------------------
+1. Copia la carpeta "Fluxi_New-main" al PC destino
+2. Ejecuta "install.bat" como administrador
+3. Listo! La aplicacion quedara configurada
+
+
+INSTALACION MANUAL:
+-------------------
+Si prefieres instalar manualmente:
+
+1. Abre una terminal (CMD o PowerShell) en la carpeta del proyecto
+
+2. Instala las dependencias:
+   npm install
+
+3. Instala PM2 globalmente:
+   npm install -g pm2
+
+4. Inicia el proxy de Dyalogo:
+   pm2 start server/dyalogo-proxy.js --name "fluxi-dyalogo-proxy" --watch
+
+5. Guarda la configuracion:
+   pm2 save
+
+
+ACCESO A LA APLICACION:
+-----------------------
+Opcion 1 - Archivo directo:
+   Abre index.html en el navegador
+
+Opcion 2 - Servidor HTTP (recomendado):
+   npx http-server -p 8000
+   Luego abre: http://localhost:8000
+
+
+INICIO AUTOMATICO CON WINDOWS:
+------------------------------
+El instalador crea un acceso directo en:
+   C:\Users\[TU_USUARIO]\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+
+Esto hace que el proxy de Dyalogo se inicie automaticamente al encender el PC.
+
+
+COMANDOS UTILES PM2:
+--------------------
+pm2 status              - Ver estado de servicios
+pm2 logs                - Ver logs en tiempo real
+pm2 restart all         - Reiniciar servicios
+pm2 stop all            - Detener servicios
+
+
+APLICACION DE DOMICILIARIOS:
+----------------------------
+La aplicacion de domiciliarios esta en:
+   domiciliario/index.html
+
+Se accede mediante el link que se envia por WhatsApp al asignar un pedido.
+No requiere instalacion adicional - funciona en el navegador del celular.
+
+
+SOLUCION DE PROBLEMAS:
+----------------------
+1. "Failed to fetch" en sincronizacion:
+   - Verifica que el proxy este corriendo: pm2 status
+   - Si no esta corriendo: pm2 start server/dyalogo-proxy.js --name "fluxi-dyalogo-proxy"
+
+2. No se ven pedidos nuevos:
+   - Recarga la pagina (F5)
+   - Verifica la conexion a internet
+   - Revisa la consola del navegador (F12)
+
+3. El proxy no inicia con Windows:
+   - Ejecuta install.bat nuevamente
+   - O crea manualmente el acceso directo a start-services.bat
+
+
+CONTACTO SOPORTE:
+-----------------
+[Agregar informacion de contacto aqui]
+
+================================================================================
