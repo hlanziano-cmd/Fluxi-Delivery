@@ -643,7 +643,8 @@
                                 <th style="width: 110px; text-align: center; font-size: 12px;">Cliente</th>
                                 <th style="width: 140px; text-align: center; font-size: 12px;">Dirección</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Barrio</th>
-                                <th style="width: 75px; text-align: center; font-size: 12px;">Total</th>
+                                <th style="width: 75px; text-align: center; font-size: 12px;">Valor Pedido</th>
+                                <th style="width: 75px; text-align: center; font-size: 12px;">Valor Dom.</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Tipo Dom.</th>
                                 <th style="width: 120px; text-align: center; font-size: 12px;">Domiciliario</th>
                                 <th style="width: 85px; text-align: center; font-size: 12px;">M. Pago</th>
@@ -656,7 +657,7 @@
                         </thead>
                         <tbody id="orders-table-body">
                             <tr>
-                                <td colspan="13" style="text-align: center; padding: 30px;">Cargando...</td>
+                                <td colspan="14" style="text-align: center; padding: 30px;">Cargando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -771,7 +772,8 @@
                                 <th style="width: 110px; text-align: center; font-size: 12px;">Cliente</th>
                                 <th style="width: 140px; text-align: center; font-size: 12px;">Dirección</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Barrio</th>
-                                <th style="width: 75px; text-align: center; font-size: 12px;">Total</th>
+                                <th style="width: 75px; text-align: center; font-size: 12px;">Valor Pedido</th>
+                                <th style="width: 75px; text-align: center; font-size: 12px;">Valor Dom.</th>
                                 <th style="width: 90px; text-align: center; font-size: 12px;">Tipo Dom.</th>
                                 <th style="width: 120px; text-align: center; font-size: 12px;">Domiciliario</th>
                                 <th style="width: 85px; text-align: center; font-size: 12px;">M. Pago</th>
@@ -783,7 +785,7 @@
                         </thead>
                         <tbody id="search-results-table">
                             <tr>
-                                <td colspan="12" style="text-align: center; padding: 30px;">Utiliza los filtros de búsqueda para encontrar pedidos</td>
+                                <td colspan="13" style="text-align: center; padding: 30px;">Utiliza los filtros de búsqueda para encontrar pedidos</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2405,7 +2407,7 @@
             tbody.innerHTML = '';
 
             if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 30px;">No hay pedidos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 30px;">No hay pedidos</td></tr>';
                 return;
             }
 
@@ -2436,7 +2438,8 @@
                     <td style="text-align: center;"><strong>${order.cliente}</strong><br><small style="font-size: 11px;">${order.telefono_cliente}</small></td>
                     <td style="text-align: center; font-size: 12px;">${order.direccion}</td>
                     <td style="text-align: center; font-size: 12px;">${order.barrio || '--'}</td>
-                    <td style="text-align: center;"><strong>${formatCurrency(order.valor_pedido + order.valor_domicilio)}</strong></td>
+                    <td style="text-align: center;"><strong>${formatCurrency(order.valor_pedido)}</strong></td>
+                    <td class="valor-domicilio-cell" style="text-align: center;"></td>
                     <td class="tipo-cell" style="text-align: center;"></td>
                     <td class="domiciliario-cell" style="text-align: center;"></td>
                     <td class="metodo-pago-cell" style="text-align: center;"></td>
@@ -2446,6 +2449,20 @@
                     <td style="text-align: center;">${calculateOrderTime(order)}</td>
                     <td class="actions-cell" style="text-align: center;"></td>
                 `;
+
+                // Input editable para valor domicilio
+                const valorDomicilioInput = document.createElement('input');
+                valorDomicilioInput.type = 'number';
+                valorDomicilioInput.className = 'btn btn-small';
+                valorDomicilioInput.style.width = '70px';
+                valorDomicilioInput.style.padding = '4px';
+                valorDomicilioInput.style.textAlign = 'center';
+                valorDomicilioInput.placeholder = '0';
+                valorDomicilioInput.min = '0';
+                valorDomicilioInput.step = '100';
+                valorDomicilioInput.value = order.valor_domicilio || 0;
+                valorDomicilioInput.onchange = () => updateValorDomicilio(order.id, valorDomicilioInput.value);
+                row.querySelector('.valor-domicilio-cell').appendChild(valorDomicilioInput);
 
                 // Select para tipo de domiciliario
                 const tipoSelect = document.createElement('select');
@@ -2461,7 +2478,7 @@
                 if (!isFinalized) {
                     tipoSelect.onchange = () => updateDeliveryType(order.id, tipoSelect.value, row);
                 }
-                row.cells[5].appendChild(tipoSelect);
+                row.cells[6].appendChild(tipoSelect);
 
                 // Select para domiciliario
                 const domiciliarioSelect = document.createElement('select');
@@ -2486,7 +2503,7 @@
                         // domiciliarioSelect.onchange = () => updateDeliveryDriver(order.id, domiciliarioSelect.value);
                     }
                 }
-                row.cells[6].appendChild(domiciliarioSelect);
+                row.cells[7].appendChild(domiciliarioSelect);
 
                 // Select para método de pago (siempre editable)
                 const metodoPagoSelect = document.createElement('select');
@@ -2499,7 +2516,7 @@
                 `;
                 metodoPagoSelect.value = order.metodo_pago || 'efectivo';
                 metodoPagoSelect.onchange = () => updatePaymentMethod(order.id, metodoPagoSelect.value);
-                row.cells[7].appendChild(metodoPagoSelect);
+                row.cells[8].appendChild(metodoPagoSelect);
 
                 // Input para datafono
                 const datafonoInput = document.createElement('input');
@@ -2530,7 +2547,7 @@
                         };
                     }
                 }
-                row.cells[8].appendChild(datafonoInput);
+                row.cells[9].appendChild(datafonoInput);
 
                 // Select para Estado Voucher (siempre editable)
                 const voucherSelect = document.createElement('select');
@@ -2543,7 +2560,7 @@
                 voucherSelect.value = order.estado_voucher || 'pendiente';
                 // Voucher siempre es editable, sin importar el estado del pedido
                 voucherSelect.onchange = () => updateVoucherStatus(order.id, voucherSelect.value);
-                row.cells[9].appendChild(voucherSelect);
+                row.cells[10].appendChild(voucherSelect);
 
                 // Estado - Mostrar badge para todos (Rappi y propios)
                 const statusBadge = document.createElement('span');
@@ -2588,10 +2605,10 @@
                     });
 
                     estadoContainer.appendChild(btnGroup);
-                    row.cells[10].appendChild(estadoContainer);
+                    row.cells[11].appendChild(estadoContainer);
                 } else {
                     // Para domiciliarios propios: Solo badge
-                    row.cells[10].appendChild(statusBadge);
+                    row.cells[11].appendChild(statusBadge);
                 }
 
                 // Crear botón dinámico Asignar/Rastrear según el estado del pedido
@@ -2609,7 +2626,7 @@
                     actionBtn.textContent = '✅ Asignar';
                     actionBtn.onclick = () => assignDelivery(order.id, row);
                 }
-                row.cells[12].appendChild(actionBtn);
+                row.cells[13].appendChild(actionBtn);
 
                 // Botón eliminar (solo para pedidos pendientes)
                 if (order.estado === 'pendiente') {
@@ -2617,7 +2634,7 @@
                     deleteBtn.className = 'btn btn-danger btn-small';
                     deleteBtn.textContent = '🗑️';
                     deleteBtn.onclick = () => deleteOrder(order.id);
-                    row.cells[12].appendChild(deleteBtn);
+                    row.cells[13].appendChild(deleteBtn);
                 }
             });
         }
@@ -2818,12 +2835,37 @@
             }
         }
 
+        async function updateValorDomicilio(orderId, valor) {
+            try {
+                const valorNumerico = parseFloat(valor) || 0;
+                const updateData = {
+                    valor_domicilio: valorNumerico,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { error } = await supabase.from('pedidos').update(updateData).eq('id', orderId);
+
+                if (error) throw error;
+
+                showAlert('orders-alert', 'success', 'Valor domicilio actualizado');
+
+                // Actualizar el array local
+                const orderIndex = allOrders.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    allOrders[orderIndex] = { ...allOrders[orderIndex], ...updateData };
+                }
+            } catch (error) {
+                showAlert('orders-alert', 'error', 'Error al actualizar valor domicilio');
+                console.error('Error:', error);
+            }
+        }
+
         async function assignDelivery(orderId, row) {
             try {
                 // Obtener valores de los selects de la fila
-                const tipoSelect = row.cells[5].querySelector('select');
-                const domiciliarioSelect = row.cells[6].querySelector('select');
-                const datafonoInput = row.cells[8].querySelector('input');
+                const tipoSelect = row.cells[6].querySelector('select');
+                const domiciliarioSelect = row.cells[7].querySelector('select');
+                const datafonoInput = row.cells[9].querySelector('input');
 
                 const tipo = tipoSelect.value;
                 const domiciliarioId = domiciliarioSelect.value;
@@ -4386,7 +4428,7 @@
             tbody.innerHTML = '';
 
             if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 30px;">No se encontraron pedidos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 30px;">No se encontraron pedidos</td></tr>';
                 return;
             }
 
@@ -4407,7 +4449,8 @@
                     <td style="text-align: center;"><strong>${order.cliente}</strong><br><small style="font-size: 11px;">${order.telefono_cliente}</small></td>
                     <td style="text-align: center; font-size: 12px;">${order.direccion}</td>
                     <td style="text-align: center; font-size: 12px;">${order.barrio || '--'}</td>
-                    <td style="text-align: center;"><strong>${formatCurrency(order.valor_pedido + order.valor_domicilio)}</strong></td>
+                    <td style="text-align: center;"><strong>${formatCurrency(order.valor_pedido)}</strong></td>
+                    <td class="valor-domicilio-cell" style="text-align: center;"></td>
                     <td style="text-align: center;">${order.tipo_domiciliario ? (order.tipo_domiciliario === 'propio' ? 'Propio' : 'Rappi') : '--'}</td>
                     <td style="text-align: center;">${order.domiciliario_nombre || '--'}</td>
                     <td style="text-align: center;">${order.metodo_pago === 'efectivo' ? 'Efectivo' : order.metodo_pago === 'datafono' ? 'Datáfono' : order.metodo_pago === 'rappi' ? 'Rappi' : '--'}</td>
@@ -4417,17 +4460,31 @@
                     <td style="text-align: center;">${calculateOrderTime(order)}</td>
                 `;
 
+                // Input editable para valor domicilio
+                const valorDomicilioInput = document.createElement('input');
+                valorDomicilioInput.type = 'number';
+                valorDomicilioInput.className = 'btn btn-small';
+                valorDomicilioInput.style.width = '70px';
+                valorDomicilioInput.style.padding = '4px';
+                valorDomicilioInput.style.textAlign = 'center';
+                valorDomicilioInput.placeholder = '0';
+                valorDomicilioInput.min = '0';
+                valorDomicilioInput.step = '100';
+                valorDomicilioInput.value = order.valor_domicilio || 0;
+                valorDomicilioInput.onchange = () => updateValorDomicilio(order.id, valorDomicilioInput.value);
+                row.querySelector('.valor-domicilio-cell').appendChild(valorDomicilioInput);
+
                 // Estado Voucher
                 const voucherBadge = document.createElement('span');
                 voucherBadge.className = 'badge ' + (order.estado_voucher === 'entregado' ? 'badge-success' : 'badge-warning');
                 voucherBadge.textContent = order.estado_voucher === 'entregado' ? 'Entregado' : 'Pendiente';
-                row.cells[9].appendChild(voucherBadge);
+                row.cells[10].appendChild(voucherBadge);
 
                 // Estado
                 const statusBadge = document.createElement('span');
                 statusBadge.className = 'status-badge status-' + order.estado;
                 statusBadge.textContent = order.estado.charAt(0).toUpperCase() + order.estado.slice(1);
-                row.cells[10].appendChild(statusBadge);
+                row.cells[11].appendChild(statusBadge);
             });
         }
 
@@ -4453,7 +4510,7 @@
             // Limpiar resultados
             const tbody = document.getElementById('search-results-table');
             if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 30px;">Utiliza los filtros de búsqueda para encontrar pedidos</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 30px;">Utiliza los filtros de búsqueda para encontrar pedidos</td></tr>';
             }
 
             // Limpiar alerta
