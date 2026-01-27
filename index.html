@@ -1728,7 +1728,7 @@
                 } else if (moduleName === 'dashboard') {
                     setTimeout(() => {
                         loadDashboardFilters();
-                        loadDashboard();
+                        initDashboardEmpty(); // Mostrar vacío por defecto, el usuario debe aplicar filtros
                     }, 100);
                 } else if (moduleName === 'consulta') {
                     setTimeout(() => loadSearchFilters(), 100);
@@ -3765,49 +3765,86 @@
             return allOrders;
         }
 
+        // Función para mostrar el dashboard vacío (estado inicial)
+        function initDashboardEmpty() {
+            // Mostrar métricas en cero
+            document.getElementById('stat-total-orders').textContent = '0';
+            document.getElementById('stat-order-income').textContent = '$0';
+            document.getElementById('stat-delivery-income').textContent = '$0';
+            document.getElementById('stat-avg-time').textContent = '--';
+
+            // Mostrar gráficos vacíos
+            renderStatusChart([]);
+            renderIncomeDistributionChart([]);
+            renderIncomeChart([]);
+
+            // Mostrar mensaje en la tabla
+            const tbody = document.getElementById('filtered-orders-table');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #6c757d;"><div style="font-size: 48px; margin-bottom: 15px;">📊</div><div style="font-size: 16px; font-weight: 500;">Selecciona un rango de fechas y haz clic en "Aplicar Filtros"</div><div style="font-size: 14px; margin-top: 5px;">para ver los reportes</div></td></tr>';
+            }
+
+            // Actualizar display del rango
+            const display = document.getElementById('date-range-display');
+            if (display) {
+                display.textContent = 'Selecciona un rango de fechas para ver los reportes';
+            }
+        }
+
         async function loadDashboard() {
             if (!supabase) return;
+
+            // Verificar si hay al menos un filtro de fecha aplicado
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+
+            // Si no hay filtros de fecha, mostrar estado vacío
+            if (!dateFrom && !dateTo) {
+                initDashboardEmpty();
+                return;
+            }
+
             try {
-                // Obtener TODOS los pedidos históricos con paginación
+                // Obtener pedidos con paginación
                 const orders = await fetchAllOrders();
                 console.log(`📊 Reportes: ${orders.length} pedidos cargados para análisis`);
-                
+
                 // Aplicar filtros
                 const filteredOrders = getFilteredOrders(orders);
-                
+
                 // Calcular métricas
                 const totalOrders = filteredOrders.length;
                 const orderIncome = filteredOrders.reduce((sum, o) => sum + (o.valor_pedido || 0), 0);
                 const deliveryIncome = filteredOrders.reduce((sum, o) => sum + (o.valor_domicilio || 0), 0);
-                
+
                 // Calcular tiempo promedio solo de pedidos entregados
-                const deliveredOrders = filteredOrders.filter(o => 
+                const deliveredOrders = filteredOrders.filter(o =>
                     o.estado === 'entregado' && o.tiempo_aceptacion && o.tiempo_entrega
                 );
                 let avgTime = '--';
                 if (deliveredOrders.length > 0) {
-                    const totalTime = deliveredOrders.reduce((sum, o) => 
+                    const totalTime = deliveredOrders.reduce((sum, o) =>
                         sum + (o.tiempo_entrega - o.tiempo_aceptacion), 0
                     );
                     const avgMinutes = Math.round((totalTime / deliveredOrders.length) / 60000);
                     avgTime = Math.floor(avgMinutes / 60) + 'h ' + (avgMinutes % 60) + 'm';
                 }
-                
+
                 // Actualizar métricas en el DOM
                 document.getElementById('stat-total-orders').textContent = totalOrders;
                 document.getElementById('stat-order-income').textContent = formatCurrency(orderIncome);
                 document.getElementById('stat-delivery-income').textContent = formatCurrency(deliveryIncome);
                 document.getElementById('stat-avg-time').textContent = avgTime;
-                
+
                 // Actualizar gráficos y tablas
                 renderStatusChart(filteredOrders);
                 renderIncomeDistributionChart(filteredOrders);
                 renderIncomeChart(filteredOrders);
                 renderFilteredOrdersTable(filteredOrders);
-                
+
                 // Actualizar display del rango
                 updateDateRangeDisplay();
-                
+
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -4117,7 +4154,7 @@
             document.getElementById('filter-payment-method').value = '';
             document.getElementById('filter-voucher-status').value = '';
             document.getElementById('filter-order-status').value = '';
-            loadDashboard();
+            initDashboardEmpty(); // Mostrar vacío al limpiar filtros
         });
 
         // ============================================
