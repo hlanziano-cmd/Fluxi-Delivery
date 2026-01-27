@@ -756,6 +756,9 @@
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <button class="btn btn-primary" id="btn-search-orders">🔍 Buscar</button>
                         <button class="btn btn-secondary" id="btn-clear-search">🗑️ Limpiar</button>
+                        <span style="margin-left: 15px; color: #6c757d; font-size: 13px;">
+                            <i style="color: #17a2b8;">ℹ️</i> Solo se muestran datos de los últimos 90 días
+                        </span>
                     </div>
                 </div>
 
@@ -853,9 +856,12 @@
                         </select>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
                     <button class="btn btn-primary" id="btn-apply-filters">🔍 Aplicar Filtros</button>
                     <button class="btn btn-secondary" id="btn-clear-filters">🗑️ Limpiar Filtros</button>
+                    <span style="margin-left: 15px; color: #6c757d; font-size: 13px;">
+                        <i style="color: #17a2b8;">ℹ️</i> Solo se muestran datos de los últimos 90 días
+                    </span>
                 </div>
             </div>
 
@@ -3609,11 +3615,41 @@
         });
 
         // ========== DASHBOARD ==========
-        
+
+        // Constante: límite de días para consultas históricas
+        const DATA_RETENTION_DAYS = 90;
+
+        // Función para obtener fechas límite (últimos 90 días)
+        function getDateLimits() {
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(minDate.getDate() - DATA_RETENTION_DAYS);
+
+            return {
+                max: today.toISOString().split('T')[0],
+                min: minDate.toISOString().split('T')[0]
+            };
+        }
+
+        // Función para aplicar límites de fecha a inputs
+        function applyDateLimits(inputIds) {
+            const limits = getDateLimits();
+            inputIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.min = limits.min;
+                    input.max = limits.max;
+                }
+            });
+        }
+
         // Función para cargar opciones de filtros dinámicamente
         async function loadDashboardFilters() {
             if (!supabase) return;
             try {
+                // Aplicar límites de 90 días a los selectores de fecha
+                applyDateLimits(['filter-date-from', 'filter-date-to']);
+
                 // Cargar domiciliarios para el filtro
                 const deliveriesResult = await supabase.from('domiciliarios').select('*').order('nombre');
                 const deliverySelect = document.getElementById('filter-delivery-person');
@@ -3734,17 +3770,22 @@
             }
         }
         
-        // Función auxiliar para cargar todos los pedidos con paginación
+        // Función auxiliar para cargar pedidos de los últimos 90 días con paginación
         async function fetchAllOrders() {
             const PAGE_SIZE = 1000;
             let allOrders = [];
             let page = 0;
             let hasMore = true;
 
+            // Calcular fecha límite (90 días atrás)
+            const limits = getDateLimits();
+            const minDateISO = limits.min + 'T00:00:00';
+
             while (hasMore) {
                 const { data, error } = await supabase
                     .from('pedidos')
                     .select('*')
+                    .gte('created_at', minDateISO)
                     .order('created_at', { ascending: false })
                     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
@@ -3762,6 +3803,7 @@
                 }
             }
 
+            console.log(`📊 Cargados ${allOrders.length} pedidos (últimos ${DATA_RETENTION_DAYS} días)`);
             return allOrders;
         }
 
@@ -4167,6 +4209,9 @@
         async function loadSearchFilters() {
             if (!supabase) return;
             try {
+                // Aplicar límites de 90 días a los selectores de fecha
+                applyDateLimits(['search-fecha-desde', 'search-fecha-hasta']);
+
                 // Cargar todos los domiciliarios (sin filtro de configuración diaria)
                 const { data: drivers, error } = await supabase
                     .from('domiciliarios')
@@ -4233,15 +4278,17 @@
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                // Aplicar filtros de fecha directamente en Supabase (más eficiente)
-                if (searchFechaDesde) {
-                    query = query.gte('created_at', searchFechaDesde + 'T00:00:00');
-                }
+                // Aplicar límite de 90 días obligatorio
+                const limits = getDateLimits();
+                const effectiveFechaDesde = searchFechaDesde || limits.min;
+                query = query.gte('created_at', effectiveFechaDesde + 'T00:00:00');
+
+                // Aplicar filtro de fecha hasta si está especificado
                 if (searchFechaHasta) {
                     query = query.lte('created_at', searchFechaHasta + 'T23:59:59');
                 }
 
-                // Aumentar límite para consultas históricas (3 meses)
+                // Límite de registros
                 query = query.limit(10000);
 
                 const { data: allOrders, error } = await query;

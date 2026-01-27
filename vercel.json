@@ -5,8 +5,20 @@
     "functions": {
         "api/dyalogo.js": {
             "maxDuration": 30
+        },
+        "api/sync-recovery.js": {
+            "maxDuration": 60
+        },
+        "api/cleanup-old-data.js": {
+            "maxDuration": 60
         }
     },
+    "crons": [
+        {
+            "path": "/api/sync-recovery?days=7",
+            "schedule": "0 6 * * *"
+        }
+    ],
     "rewrites": [
         {
             "source": "/domiciliarios",
