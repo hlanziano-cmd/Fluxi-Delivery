@@ -26,8 +26,9 @@
   "author": "Tu Nombre",
   "license": "UNLICENSED",
   "private": true,
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "@supabase/supabase-js": "^2.93.1"
+  },
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
