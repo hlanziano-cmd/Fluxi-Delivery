@@ -437,6 +437,16 @@
                 height: 300px !important;
             }
         }
+
+        /* Ocultar flechas de inputs numéricos */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
@@ -2459,7 +2469,6 @@
                 valorDomicilioInput.style.textAlign = 'center';
                 valorDomicilioInput.placeholder = '0';
                 valorDomicilioInput.min = '0';
-                valorDomicilioInput.step = '100';
                 valorDomicilioInput.value = order.valor_domicilio || 0;
                 valorDomicilioInput.onchange = () => updateValorDomicilio(order.id, valorDomicilioInput.value);
                 row.querySelector('.valor-domicilio-cell').appendChild(valorDomicilioInput);
@@ -4469,7 +4478,6 @@
                 valorDomicilioInput.style.textAlign = 'center';
                 valorDomicilioInput.placeholder = '0';
                 valorDomicilioInput.min = '0';
-                valorDomicilioInput.step = '100';
                 valorDomicilioInput.value = order.valor_domicilio || 0;
                 valorDomicilioInput.onchange = () => updateValorDomicilio(order.id, valorDomicilioInput.value);
                 row.querySelector('.valor-domicilio-cell').appendChild(valorDomicilioInput);
