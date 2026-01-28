@@ -634,7 +634,8 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <input type="text" id="filter-order-name" placeholder="Buscar por nombre..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; width: 220px;">
                     <select id="filter-status" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
                         <option value="">Todos los estados</option>
                         <option value="pendiente">Pendiente</option>
@@ -2474,7 +2475,17 @@
                 // Verificar si el pedido está en estado final (no editable)
                 const isFinalized = order.estado === 'entregado' || order.estado === 'cancelado';
 
+                // Verificar si el pedido lleva más de 20 minutos sin asignar
+                const minutesSinceCreation = (Date.now() - new Date(order.created_at).getTime()) / 60000;
+                const isOverdue = order.estado === 'pendiente' && minutesSinceCreation > 20;
+
                 const row = tbody.insertRow();
+
+                if (isOverdue) {
+                    row.style.backgroundColor = '#fff0f0';
+                    row.style.borderLeft = '4px solid #dc3545';
+                }
+
                 // Formatear fecha y hora del pedido
                 let fechaDisplay = '--';
                 try {
@@ -2699,7 +2710,15 @@
 
         function filterOrders() {
             const status = document.getElementById('filter-status').value;
-            const filtered = status ? allOrders.filter(o => o.estado === status) : allOrders;
+            const nameSearch = (document.getElementById('filter-order-name')?.value || '').trim().toLowerCase();
+            let filtered = allOrders;
+
+            if (status) {
+                filtered = filtered.filter(o => o.estado === status);
+            }
+            if (nameSearch) {
+                filtered = filtered.filter(o => o.cliente.toLowerCase().includes(nameSearch));
+            }
             renderOrders(filtered);
         }
 
@@ -3649,6 +3668,7 @@
             }
         });
         document.getElementById('filter-status').addEventListener('change', filterOrders);
+        document.getElementById('filter-order-name').addEventListener('input', filterOrders);
         document.getElementById('order-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeOrderModal(); });
         document.getElementById('tracking-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTrackingModal(); });
 
