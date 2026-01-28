@@ -2092,7 +2092,7 @@
                     </td>
                 `;
 
-                // Event listener para habilitar/deshabilitar el input de valor
+                // Event listeners con auto-guardado
                 const checkbox = row.querySelector('.daily-driver-checkbox');
                 const valueInput = row.querySelector('.daily-driver-value');
 
@@ -2101,13 +2101,61 @@
                     if (!checkbox.checked) {
                         valueInput.value = '';
                     }
+                    autoSaveDailyDriverConfig(driver.id, checkbox.checked, valueInput.value);
                 });
 
                 // Formatear valor mientras se escribe
                 valueInput.addEventListener('input', function() {
                     formatCurrencyInput(this);
                 });
+
+                // Auto-guardar al salir del campo de valor
+                valueInput.addEventListener('blur', function() {
+                    if (checkbox.checked) {
+                        autoSaveDailyDriverConfig(driver.id, checkbox.checked, valueInput.value);
+                    }
+                });
             });
+        }
+
+        // Auto-guardar configuración individual de un domiciliario
+        async function autoSaveDailyDriverConfig(driverId, isActive, valorStr) {
+            try {
+                const today = getTodayDateColombia();
+                const valor = parseFormattedNumber(valorStr) || 0;
+                const activoHoy = isActive && valor > 0;
+
+                // Buscar si ya existe registro para este domiciliario hoy
+                const { data: existing } = await supabase
+                    .from('configuracion_diaria')
+                    .select('id')
+                    .eq('fecha', today)
+                    .eq('domiciliario_id', driverId)
+                    .limit(1);
+
+                if (existing && existing.length > 0) {
+                    // Actualizar registro existente
+                    await supabase
+                        .from('configuracion_diaria')
+                        .update({ activo_hoy: activoHoy, valor_arranque: valor })
+                        .eq('id', existing[0].id);
+                } else {
+                    // Insertar nuevo registro
+                    await supabase
+                        .from('configuracion_diaria')
+                        .insert({
+                            fecha: today,
+                            domiciliario_id: driverId,
+                            activo_hoy: activoHoy,
+                            valor_arranque: valor,
+                            created_at: new Date().toISOString()
+                        });
+                }
+
+                console.log(`💾 Config guardada: ${driverId} - Activo: ${activoHoy}, Valor: ${valor}`);
+            } catch (error) {
+                console.error('Error auto-guardando config:', error);
+            }
         }
 
         async function saveDailyDriversConfig() {
@@ -2220,6 +2268,7 @@
                 }
                 closeDeliveryModal();
                 loadDeliveries();
+                loadDailyDriversConfig();
             } catch (error) {
                 console.error('Error al guardar domiciliario:', error);
                 showAlert('delivery-alert', 'error', 'Error: ' + error.message);
