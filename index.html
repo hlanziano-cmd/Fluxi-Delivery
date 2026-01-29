@@ -980,6 +980,32 @@
                 </div>
                 <canvas id="income-chart" style="max-height: 300px;"></canvas>
             </div>
+
+            <!-- Reporte de Asignación a Tiempo -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3>⏱️ Reporte de Asignación a Tiempo</h3>
+                    <span style="font-size: 13px; color: #6c757d; font-weight: normal;">Pedidos asignados dentro de los primeros 20 minutos</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Total Pedidos</th>
+                                <th style="color: #28a745;">A Tiempo</th>
+                                <th style="color: #dc3545;">Tardíos</th>
+                                <th>% A Tiempo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignment-time-report-table">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 30px;">Aplica filtros para ver el reporte</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- CUADRE DE CAJA -->
@@ -3946,6 +3972,12 @@
                 tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #6c757d;"><div style="font-size: 48px; margin-bottom: 15px;">📊</div><div style="font-size: 16px; font-weight: 500;">Selecciona un rango de fechas y haz clic en "Aplicar Filtros"</div><div style="font-size: 14px; margin-top: 5px;">para ver los reportes</div></td></tr>';
             }
 
+            // Mostrar mensaje en la tabla de asignación a tiempo
+            const assignmentTbody = document.getElementById('assignment-time-report-table');
+            if (assignmentTbody) {
+                assignmentTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #6c757d;">Aplica filtros para ver el reporte de asignación</td></tr>';
+            }
+
             // Actualizar display del rango
             const display = document.getElementById('date-range-display');
             if (display) {
@@ -4003,6 +4035,7 @@
                 renderIncomeDistributionChart(filteredOrders);
                 renderIncomeChart(filteredOrders);
                 renderFilteredOrdersTable(filteredOrders);
+                renderAssignmentTimeReport(filteredOrders);
 
                 // Actualizar display del rango
                 updateDateRangeDisplay();
@@ -4258,7 +4291,117 @@
                 }
             });
         }
-        
+
+        function renderAssignmentTimeReport(orders) {
+            const tbody = document.getElementById('assignment-time-report-table');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">No hay pedidos para analizar</td></tr>';
+                return;
+            }
+
+            // Agrupar pedidos por día
+            const ordersByDay = {};
+            orders.forEach(order => {
+                if (!order.created_at) return;
+                const dateKey = new Date(order.created_at).toISOString().split('T')[0];
+                if (!ordersByDay[dateKey]) {
+                    ordersByDay[dateKey] = { total: 0, onTime: 0, late: 0 };
+                }
+                ordersByDay[dateKey].total++;
+
+                // Determinar si fue asignado a tiempo (dentro de 20 minutos)
+                // Un pedido está "asignado" si tiene estado diferente a 'pendiente' o tiene domiciliario_id
+                const wasAssigned = order.estado !== 'pendiente' || order.domiciliario_id;
+
+                if (wasAssigned && order.tiempo_aceptacion) {
+                    // Si tiene tiempo de aceptación, calcular diferencia
+                    const createdTime = new Date(order.created_at).getTime();
+                    const acceptedTime = order.tiempo_aceptacion;
+                    const minutesToAssign = (acceptedTime - createdTime) / 60000;
+
+                    if (minutesToAssign <= 20) {
+                        ordersByDay[dateKey].onTime++;
+                    } else {
+                        ordersByDay[dateKey].late++;
+                    }
+                } else if (wasAssigned) {
+                    // Si fue asignado pero no tiene tiempo_aceptacion, contar como a tiempo
+                    ordersByDay[dateKey].onTime++;
+                } else {
+                    // Si sigue pendiente, verificar si ya pasaron más de 20 minutos
+                    const minutesSinceCreation = (Date.now() - new Date(order.created_at).getTime()) / 60000;
+                    if (minutesSinceCreation > 20) {
+                        ordersByDay[dateKey].late++;
+                    }
+                    // Si tiene menos de 20 minutos y sigue pendiente, no lo contamos aún
+                }
+            });
+
+            // Ordenar fechas descendente
+            const sortedDates = Object.keys(ordersByDay).sort((a, b) => b.localeCompare(a));
+
+            if (sortedDates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">No hay datos de asignación disponibles</td></tr>';
+                return;
+            }
+
+            // Totales generales
+            let totalGeneral = 0, onTimeGeneral = 0, lateGeneral = 0;
+
+            sortedDates.forEach(dateKey => {
+                const stats = ordersByDay[dateKey];
+                const assignedTotal = stats.onTime + stats.late;
+                const percentage = assignedTotal > 0 ? Math.round((stats.onTime / assignedTotal) * 100) : 0;
+
+                totalGeneral += stats.total;
+                onTimeGeneral += stats.onTime;
+                lateGeneral += stats.late;
+
+                const dateFormatted = new Date(dateKey + 'T12:00:00').toLocaleDateString('es-CO', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${dateFormatted}</td>
+                    <td><strong>${stats.total}</strong></td>
+                    <td style="color: #28a745; font-weight: bold;">${stats.onTime}</td>
+                    <td style="color: #dc3545; font-weight: bold;">${stats.late}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex-grow: 1; background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
+                                <div style="width: ${percentage}%; height: 100%; background: ${percentage >= 80 ? '#28a745' : percentage >= 50 ? '#ffc107' : '#dc3545'};"></div>
+                            </div>
+                            <span style="font-weight: bold; color: ${percentage >= 80 ? '#28a745' : percentage >= 50 ? '#856404' : '#dc3545'};">${percentage}%</span>
+                        </div>
+                    </td>
+                `;
+            });
+
+            // Agregar fila de totales
+            const assignedGeneralTotal = onTimeGeneral + lateGeneral;
+            const percentageGeneral = assignedGeneralTotal > 0 ? Math.round((onTimeGeneral / assignedGeneralTotal) * 100) : 0;
+
+            const totalRow = tbody.insertRow();
+            totalRow.style.backgroundColor = '#f8f9fa';
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td style="border-top: 2px solid #dee2e6;">TOTAL</td>
+                <td style="border-top: 2px solid #dee2e6;">${totalGeneral}</td>
+                <td style="border-top: 2px solid #dee2e6; color: #28a745;">${onTimeGeneral}</td>
+                <td style="border-top: 2px solid #dee2e6; color: #dc3545;">${lateGeneral}</td>
+                <td style="border-top: 2px solid #dee2e6;">
+                    <span style="color: ${percentageGeneral >= 80 ? '#28a745' : percentageGeneral >= 50 ? '#856404' : '#dc3545'};">${percentageGeneral}%</span>
+                </td>
+            `;
+        }
+
         function renderFilteredOrdersTable(orders) {
             const tbody = document.getElementById('filtered-orders-table');
             tbody.innerHTML = '';
